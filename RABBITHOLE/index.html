@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maclaine Crabbe - Digital Space</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+    <style>
+        /* General page styling */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1b2b34; /* Dark industrial blue */
+            color: #d1e8e2; /* Light text color for contrast */
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            color: #79a7d3; /* Light blue for headers */
+        }
+
+        h1 {
+            border-bottom: 2px solid #79a7d3;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        p, li {
+            line-height: 1.6;
+        }
+
+        /* Links */
+        a {
+            color: #66d9ef;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        /* Code blocks */
+        pre {
+            background-color: #343d46; /* Slightly darker blue for code blocks */
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            color: #a7adba;
+        }
+
+        code {
+            background-color: #343d46;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+
+        /* Lists */
+        ul {
+            padding-left: 20px;
+        }
+
+        /* Content area */
+        div#content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #22303b; /* Lighter industrial blue for content container */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+        .link-button {
+            display: inline-block;
+            width: auto;
+            margin: 12px auto;
+            background-color: #4a90e2;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            letter-spacing: 0.3px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .link-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .link-button:hover {
+            background-color: #3a7bd5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .link-button:hover::after {
+            animation: ripple 1s ease-out;
+        }
+
+        .link-button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            20% {
+                transform: scale(25, 25);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(40, 40);
+            }
+        }
+        /* Navigation and buttons */
+        .nav-buttons {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .nav-buttons a {
+            background-color: #79a7d3;
+            color: #1b2b34;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 0 10px;
+            text-decoration: none;
+        }
+
+        .nav-buttons a:hover {
+            background-color: #66d9ef;
+        }
+
+        /* Sidebar */
+        #sidebar {
+            width: 200px;
+            float: left;
+            margin-right: 20px;
+            background-color: #22303b;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        #sidebar ul {
+            list-style-type: none;
+            padding-left: 20px;
+        }
+
+        #sidebar > ul {
+            padding-left: 0;
+        }
+
+        #sidebar li {
+            margin-bottom: 5px;
+        }
+
+        #sidebar li > a {
+            font-weight: bold;
+        }
+
+        #sidebar li li > a {
+            font-weight: normal;
+        }
+
+        /* Search box */
+        #search-box {
+            margin-bottom: 20px;
+        }
+
+        #search-box input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #343d46;
+            color: #d1e8e2;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <div id="search-box">
+            <input type="text" id="search" placeholder="Search content..." onkeyup="filterContent()">
+        </div>
+        <ul>
+            <li><a href="#" data-md="markdown/quickstart/index.md">Quickstart</a></li>
+            <li>
+                <a href="#" data-md="markdown/vending/index.md">Vending Business</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/vending/contract.md">Contract</a></li>
+                    <li><a href="#" data-md="markdown/vending/maintenance.md">Maintenance</a></li>
+                    <li><a href="#" data-md="markdown/vending/future-plans.md">Future Plans</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/automation/index.md">Automation Engineering</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/automation/control-panels.md">Control Panels</a></li>
+                    <li><a href="#" data-md="markdown/automation/ai-integration.md">AI Integration</a></li>
+                    <li>
+                        <a href="#">Project Case Studies</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/factory-automation.md">Factory Automation</a></li>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/fiber-pulling-system.md">Fiber Pulling System</a></li>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/xyz-positioning.md">XYZ Positioning</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Contracts</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/automation/contracts/study-contract.md">Study Contract</a></li>
+                            <li><a href="#" data-md="markdown/automation/contracts/implementation.md">Implementation</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" data-md="markdown/automation/future-roadmap.md">Future Roadmap</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/thorium-reactor/index.md">Thorium Reactor Factory</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/thorium-reactor/prototype-design.md">Prototype Design</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/investment.md">Investment</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/energy-hyperabundance.md">Energy Hyperabundance</a></li>
+                    <li>
+                        <a href="#">Project Plans</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/thorium-reactor/project-plans/infrastructure.md">Infrastructure</a></li>
+                            <li><a href="#" data-md="markdown/thorium-reactor/project-plans/regulatory-compliance.md">Regulatory Compliance</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/vertical-farming.md">Vertical Farming</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/research.md">Research</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/thorium-documentary.md">Thorium Documentary</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/education/index.md">Education Reform</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/education/interactive-learning.md">Interactive Learning</a></li>
+                    <li><a href="#" data-md="markdown/education/generational-values.md">Generational Values</a></li>
+                    <li><a href="#" data-md="markdown/education/project-based-learning.md">Project-Based Learning</a></li>
+                    <li><a href="#" data-md="markdown/education/omnivision-projector.md">Omnivision Projector</a></li>
+                    <li><a href="#" data-md="markdown/education/ai-task-system.md">AI Task System</a></li>
+                    <li><a href="#" data-md="markdown/education/future-roadmap.md">Future Roadmap</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/interstellar-seed/index.md">Interstellar Seed of Life</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/interstellar-seed/space-habitats.md">Space Habitats</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/bioproduction.md">Bioproduction</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/space-infrastructure.md">Space Infrastructure</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/research.md">Research</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/energy-abundance.md">Energy Abundance</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/bitcoin-dao/index.md">Bitcoin DAO</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/bitcoin-dao/dao-governance.md">DAO Governance</a></li>
+                    <li><a href="#" data-md="markdown/bitcoin-dao/orders-of-magnitude.md">Orders of Magnitude</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/ai-systems/index.md">AI Systems</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/ai-systems/yolo-optimization.md">YOLO Optimization</a></li>
+                    <li><a href="#" data-md="markdown/ai-systems/fastsam-integration.md">FastSAM Integration</a></li>
+                    <li>
+                        <a href="#" data-md="markdown/ai-systems/pond-ai/index.md">Pond AI</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/pond-ai/wildlife-detection.md">Wildlife Detection</a></li>
+                            <li><a href="#" data-md="markdown/ai-systems/pond-ai/data-optimization.md">Data Optimization</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">AI Projects</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/ai-projects/camera-reset-automation.md">Camera Reset Automation</a></li>
+                            <li><a href="#" data-md="markdown/ai-systems/ai-projects/local-fine-tuning.md">Local Fine-Tuning</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Contracts</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/contracts/ai-study-contract.md">AI Study Contract</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/legacy-and-values/index.md">Legacy and Values</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/legacy-and-values/personal-mission.md">Personal Mission</a></li>
+                    <li><a href="#" data-md="markdown/legacy-and-values/generational-lessons.md">Generational Lessons</a></li>
+                    <li><a href="#" data-md="markdown/legacy-and-values/faith-and-leadership.md">Faith and Leadership</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/future-projects/index.md">Future Projects</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/future-projects/robotics.md">Robotics</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/advanced-nuclear.md">Advanced Nuclear</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/global-energy-grid.md">Global Energy Grid</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/resource-optimization.md">Resource Optimization</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/vr-education.md">VR Education</a></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+<div id="content">Loading content...</div>
+
+<div class="nav-buttons">
+    <a href="previous.html" id="previous-button">Previous</a>
+    <a href="next.html" id="next-button">Next</a>
+    <a href="index.html">Return to Quickstart</a>
+</div>
+
+<script>
+    // Array of main project paths in the sidebar
+    const projects = [
+        'markdown/quickstart/index.md',
+        'markdown/vending/index.md',
+        'markdown/automation/index.md',
+        'markdown/thorium-reactor/index.md',
+        'markdown/education/index.md',
+        'markdown/interstellar-seed/index.md',
+        'markdown/bitcoin-dao/index.md',
+        'markdown/ai-systems/index.md',
+        'markdown/legacy-and-values/index.md',
+        'markdown/future-projects/index.md'
+    ];
+    // Function to navigate to the next or previous project
+    function navigateProject(direction) {
+        if (direction === 'next') {
+            currentIndex = (currentIndex + 1) % projects.length;
+        } else {
+            currentIndex = (currentIndex - 1 + projects.length) % projects.length;
+        }
+        
+        loadMarkdown(projects[currentIndex]);
+    }
+
+    // Add event listeners to the navigation buttons
+    document.getElementById('next-button').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateProject('next');
+    });
+
+    document.getElementById('previous-button').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateProject('previous');
+    });
+
+    // Add event listener for arrow key navigation
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateProject('next');
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateProject('previous');
+        }
+    });
+    // Function to load markdown file dynamically
+    function loadMarkdown(file) {
+        console.log('Loading Markdown file:', file);
+        // Add a cache-busting parameter to the URL
+        const cacheBuster = `?cb=${new Date().getTime()}`;
+        fetch(file + cacheBuster)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error loading file: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(text => {
+                document.getElementById('content').innerHTML = marked.parse(text);
+                // Add event listeners to the newly loaded content
+                addContentEventListeners();
+            })
+            .catch(error => {
+                console.error("Error loading markdown file:", error);
+                document.getElementById('content').innerHTML = '<p>Error loading content. Please check the file path or server configuration.</p>';
+            });
+    }
+
+    // Load initial content
+    let currentIndex = 0;
+    loadMarkdown(projects[currentIndex]);
+
+    // Function to navigate to the next or previous project
+    function navigateProject(direction) {
+        if (direction === 'next') {
+            currentIndex = (currentIndex + 1) % projects.length;
+        } else {
+            currentIndex = (currentIndex - 1 + projects.length) % projects.length;
+        }
+        
+        loadMarkdown(projects[currentIndex]);
+    }
+
+    // Add event listeners to the navigation buttons
+    document.getElementById('next-button').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateProject('next');
+    });
+
+    document.getElementById('previous-button').addEventListener('click', function(e) {
+        e.preventDefault();
+        navigateProject('previous');
+    });
+
+    // Add event listeners to all sidebar links
+    document.querySelectorAll('#sidebar a[data-md]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            loadMarkdown(this.getAttribute('data-md'));
+        });
+    });
+    // Function to add event listeners to content links
+    function addContentEventListeners() {
+        document.querySelectorAll('#content a[data-md]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadMarkdown(this.getAttribute('data-md'));
+            });
+        });
+    }
+    // Search and filter function
+    function filterContent() {
+        let input = document.getElementById('search').value.toLowerCase();
+        let links = document.querySelectorAll('#sidebar ul li');
+
+        links.forEach(link => {
+            let text = link.innerText.toLowerCase();
+            if (text.includes(input)) {
+                link.style.display = 'block';
+            } else {
+                link.style.display = 'none';
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
