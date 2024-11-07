@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta Tags and Title -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Viewer</title>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+    <!-- Highlight.js for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+    :root {
+        --bg-primary: #1b2b34;
+        --bg-secondary: #22303b;
+        --bg-tertiary: #2a3f4a;
+        --text-primary: #d1e8e2;
+        --text-secondary: #a7c4bc;
+        --accent: #66d9ef;
+        --hover-bg: #344752;
+        --link-color: #66d9ef; /* New link color */
+        --link-hover-color: #8be9fd; /* Slightly lighter for hover */
+        --link-visited-color: #50b7c1; /* Different shade for visited links */
+        --transition-speed: 0.3s;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: 'Inter', Arial, sans-serif;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        display: flex;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar Styles */
+    #sidebar {
+        width: 280px;
+        height: 100vh;
+        position: fixed;
+        left: 0;
+        top: 0;
+        background-color: var(--bg-secondary);
+        padding: 20px;
+        overflow-y: auto;
+        transition: all var(--transition-speed);
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+
+    #sidebar.collapsed {
+        width: 60px;
+        padding: 20px 10px;
+    }
+
+    #sidebar.collapsed h2 {
+        font-size: 0;
+        border: none;
+        margin-bottom: 30px;
+    }
+
+    #sidebar.collapsed h2::after {
+        content: "📑";
+        font-size: 24px;
+        display: block;
+        text-align: center;
+    }
+
+    #toggle-sidebar {
+        position: absolute;
+        right: -12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background-color: var(--accent);
+        border: none;
+        width: 24px;
+        height: 48px;
+        border-radius: 0 24px 24px 0;
+        cursor: pointer;
+        color: var(--bg-primary);
+        transition: var(--transition-speed);
+        z-index: 10;
+    }
+
+    #toggle-sidebar:hover {
+        background-color: var(--text-primary);
+    }
+
+    #sidebar h2 {
+        color: var(--accent);
+        margin-bottom: 20px;
+        font-size: 1.5rem;
+        border-bottom: 2px solid var(--bg-tertiary);
+        padding-bottom: 10px;
+    }
+	#sidebar.collapsed {
+		width: 60px;
+		padding: 20px 10px;
+	}
+
+	#content.expanded {
+		margin-left: 60px;
+		max-width: calc(100vw - 60px);
+	}
+
+	.folder-content {
+		display: none;
+	}
+
+	.folder-content.expanded {
+		display: block;
+	}
+
+	.folder-icon.expanded {
+		transform: rotate(90deg);
+	}
+
+    /* Folder Structure Styles */
+    #folder-structure {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .folder-item,
+    .file-item {
+        position: relative;
+    }
+
+    .folder-header {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 8px 0;
+        user-select: none;
+    }
+
+    .folder-header .folder-icon {
+        margin-right: 8px;
+        transition: transform var(--transition-speed);
+    }
+
+    .folder-header .folder-icon.expanded {
+        transform: rotate(90deg);
+    }
+
+    .folder-name {
+        flex-grow: 1;
+    }
+
+    .folder-content {
+        display: none;
+        margin-left: 16px;
+    }
+
+    .folder-content.expanded {
+        display: block;
+    }
+
+    .file-item {
+        display: flex;
+        align-items: center;
+        padding: 6px 0;
+        cursor: pointer;
+        margin-left: 24px; /* Indentation */
+    }
+
+    .file-item .file-icon {
+        margin-right: 8px;
+    }
+
+    .file-item.active {
+        background-color: var(--hover-bg);
+        border-radius: 4px;
+    }
+
+    .file-item:hover {
+        background-color: var(--hover-bg);
+        border-radius: 4px;
+    }
+
+    /* Link Styles */
+    #document-display a {
+        color: var(--link-color);
+        text-decoration: underline;
+        transition: color var(--transition-speed);
+    }
+
+    #document-display a:visited {
+        color: var(--link-visited-color);
+    }
+
+    #document-display a:hover {
+        color: var(--link-hover-color);
+    }
+
+    /* Content Styles */
+    #content {
+        flex: 1;
+        margin-left: 280px;
+        padding: 30px;
+        max-width: calc(100vw - 280px);
+        transition: all var(--transition-speed);
+    }
+
+    #content.expanded {
+        margin-left: 60px;
+        max-width: calc(100vw - 60px);
+    }
+
+    .document-container {
+        background-color: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .button {
+        background-color: var(--accent);
+        color: var(--bg-primary);
+        border: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all var(--transition-speed);
+        margin-top: 15px;
+    }
+
+    .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 217, 239, 0.2);
+    }
+
+    .generation-card {
+        background-color: var(--bg-tertiary);
+        border-radius: 12px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+
+    .generation-card h3 {
+        color: var(--accent);
+        margin-bottom: 15px;
+    }
+	.file-item.active {
+		background-color: var(--hover-bg);
+		border-radius: 4px;
+		color: var(--accent); /* Optional: change text color when active */
+	}
+    textarea {
+        width: 100%;
+        height: 200px;
+        background-color: var(--bg-secondary);
+        border: 2px solid var(--bg-tertiary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        padding: 12px;
+        margin: 10px 0;
+        resize: vertical;
+        font-family: inherit;
+        transition: border-color var(--transition-speed);
+    }
+
+    textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    select {
+        width: 100%;
+        padding: 10px;
+        background-color: var(--bg-secondary);
+        border: 2px solid var(--bg-tertiary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        margin: 10px 0;
+        cursor: pointer;
+    }
+
+    select:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    #document-display {
+        line-height: 1.6;
+        font-size: 1.1rem;
+    }
+
+    /* Markdown Content Styling */
+	#document-display h1, #document-display h2, #document-display h3 {
+		font-size: 1.5em; /* Adjust to preferred size */
+		font-weight: bold;
+		color: var(--accent);
+	}
+
+	#document-display ul, #document-display ol {
+		padding-left: 20px; /* Add indentation for lists */
+		margin-bottom: 1em;
+	}
+
+	#document-display li {
+		line-height: 1.5;
+		font-size: 1.1rem; /* Adjust for readability */
+	}
+
+    #document-display p {
+        margin-bottom: 1em;
+    }
+
+    #document-display code {
+        background-color: var(--bg-tertiary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Menlo', monospace;
+    }
+
+    /* Syntax Highlighting */
+    pre code {
+        background-color: var(--bg-tertiary);
+        padding: 12px;
+        border-radius: 6px;
+        overflow-x: auto;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        #sidebar {
+            transform: translateX(-100%);
+        }
+
+        #sidebar.active {
+            transform: translateX(0);
+            width: 280px;
+        }
+
+        #content {
+            margin-left: 0;
+            max-width: 100vw;
+        }
+
+        #toggle-sidebar {
+            display: none;
+        }
+
+        .menu-toggle {
+            display: block;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background-color: var(--accent);
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    }
+</style>
+
+</head>
+<body>
+    <!-- Sidebar -->
+	<div id="sidebar">
+		<h2>Documents</h2>
+		<button id="toggle-sidebar" onclick="toggleSidebar()">❮</button>
+		<div id="folder-structure">
+			{{ render_folders(structure) }}
+		</div>
+	</div>
+
+    <!-- Main Content -->
+    <div id="content">
+        <div class="document-container">
+            <div id="document-display">Select a document to view content...</div>
+            <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
+            <div id="edit-area" style="display: none;">
+                <textarea id="edit-textarea"></textarea>
+                <button onclick="saveEdit()" class="button">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="generation-card">
+            <h3>Generate/Alter Document</h3>
+            <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
+            <label for="operation">Operation:</label>
+            <select id="operation">
+                <option value="alter">Alter Existing Document</option>
+                <option value="generate">Generate New Document</option>
+            </select>
+            <button onclick="generateDocument()" class="button">Execute</button>
+        </div>
+    </div>
+    <!-- Scripts -->
+<script>
+    // Configure marked.js renderer to handle internal and external links
+    const renderer = new marked.Renderer();
+
+    renderer.link = function(href, title, text) {
+        if (href.endsWith('.md')) {
+            // Internal link: use loadMarkdown function
+            return `<a href="#" onclick="loadMarkdown('${href}')">${text}</a>`;
+        } else {
+            // External link: open in a new tab
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        }
+    };
+
+    marked.setOptions({
+        renderer: renderer,
+    });
+
+    let currentDocPath = null;
+    let rawMarkdownContent = "";  // Store raw markdown for editing only
+    let historyStack = [];        // Custom history stack
+
+// Function to load and display a markdown document
+function loadMarkdown(docPath, event) {
+    if (currentDocPath && currentDocPath !== docPath) {
+        historyStack.push(currentDocPath);
+    }
+    currentDocPath = docPath;
+
+    const display = document.getElementById('document-display');
+    display.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+
+    // Remove active class from all file items
+    document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
+
+    // Highlight the selected document in the sidebar
+    if (event) {
+        event.stopPropagation();
+        event.currentTarget.classList.add('active');
+    }
+
+    // Fetch raw markdown and HTML content
+    fetch(`/view_document/${docPath}`)
+        .then(response => response.ok ? response.json() : Promise.reject("Document not found"))
+        .then(data => {
+            rawMarkdownContent = data.markdown_content;  // Store raw markdown for editing
+            const htmlContent = data.html_content;  // Use HTML content for display
+
+            display.innerHTML = htmlContent;  // Show HTML in the display area
+            document.getElementById('edit-textarea').value = rawMarkdownContent;  // Load raw markdown in editor
+            document.getElementById('edit-button').style.display = 'block';
+
+            // Initialize syntax highlighting
+            document.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        })
+        .catch(error => {
+            display.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
+        });
+}
+
+// Function to enable editing mode with raw markdown
+function enableEdit() {
+    const editArea = document.getElementById('edit-area');
+    const display = document.getElementById('document-display');
+
+    editArea.style.display = 'block';
+    display.style.display = 'none';
+
+    // Load raw markdown content into textarea for editing
+    document.getElementById('edit-textarea').value = rawMarkdownContent;
+    document.getElementById('edit-textarea').focus();
+}
+
+// Function to save edited markdown content back to the server
+function saveEdit() {
+    const editArea = document.getElementById('edit-area');
+    const display = document.getElementById('document-display');
+    const newContent = document.getElementById('edit-textarea').value;
+
+    fetch('/edit_document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doc_path: currentDocPath, content: newContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        rawMarkdownContent = newContent;  // Update stored raw markdown
+        loadMarkdown(currentDocPath);  // Reload document to update display with HTML rendering
+        editArea.style.display = 'none';
+        display.style.display = 'block';
+        showNotification(data.message, 'success');
+    })
+    .catch(error => {
+        showNotification('An error occurred while saving.', 'error');
+    });
+}
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const content = document.getElementById('content');
+    const toggleBtn = document.getElementById('toggle-sidebar');
+
+    sidebar.classList.toggle('collapsed');
+    content.classList.toggle('expanded');
+    toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
+}
+function toggleFolder(element) {
+    const folderContent = element.parentElement.querySelector('.folder-content');
+    const folderIcon = element.querySelector('.folder-icon');
+
+    folderContent.classList.toggle('expanded');
+    folderIcon.classList.toggle('expanded');
+}
+
+function generateDocument() {
+    const operation = document.getElementById('operation').value;
+    const contextText = document.getElementById('context-text').value;
+    const button = event.target;
+    const originalText = button.textContent;
+
+    // Disable button and show loading state
+    button.disabled = true;
+    button.textContent = 'Processing...';
+
+    fetch('/generate_document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            doc_path: currentDocPath,
+            operation: operation,
+            context_text: contextText
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showNotification(data.message, 'success');
+        if (operation === 'generate') {
+            // Reload the page to update the folder structure
+            location.reload();
+        } else {
+            loadMarkdown(currentDocPath);
+        }
+        // Reset form
+        document.getElementById('context-text').value = '';
+    })
+    .catch(error => {
+        showNotification('An error occurred during generation.', 'error');
+    })
+    .finally(() => {
+        // Reset button state
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
+    // Function to go back to the previous document in the history
+    function goBack() {
+        if (historyStack.length > 0) {
+            const previousDocPath = historyStack.pop();
+            loadMarkdown(previousDocPath);  // Load the previous document
+        } else {
+            showNotification("No previous document to go back to.", "error");
+        }
+    }
+
+    // Add an event listener to enable the back button functionality
+    window.addEventListener("popstate", (event) => {
+        goBack();
+    });
+
+    // Add a back button to the page with an onclick handler
+    document.addEventListener("DOMContentLoaded", () => {
+        const backButton = document.createElement("button");
+        backButton.textContent = "Back";
+        backButton.classList.add("button");
+        backButton.style.marginBottom = "10px";
+        backButton.onclick = goBack;
+
+        document.getElementById('content').prepend(backButton);  // Add the button at the top of content
+    });
+
+    // Function to toggle the sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const content = document.getElementById('content');
+        const toggleBtn = document.getElementById('toggle-sidebar');
+
+        sidebar.classList.toggle('collapsed');
+        content.classList.toggle('expanded');
+        toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
+    }
+
+    // Function to toggle folders in the document sidebar
+    function toggleFolder(element) {
+        const folderContent = element.parentElement.querySelector('.folder-content');
+        const folderIcon = element.querySelector('.folder-icon');
+
+        folderContent.classList.toggle('expanded');
+        folderIcon.classList.toggle('expanded');
+    }
+
+    // Function to enable editing mode with raw markdown
+    function enableEdit() {
+        const editArea = document.getElementById('edit-area');
+        const display = document.getElementById('document-display');
+
+        editArea.style.display = 'block';
+        display.style.display = 'none';
+
+        // Load raw markdown content into textarea for editing
+        document.getElementById('edit-textarea').value = rawMarkdownContent;
+        document.getElementById('edit-textarea').focus();
+    }
+
+    // Function to save edited markdown content back to the server
+    function saveEdit() {
+        const editArea = document.getElementById('edit-area');
+        const display = document.getElementById('document-display');
+        const newContent = document.getElementById('edit-textarea').value;
+        const button = event.target;
+        const originalText = button.textContent;
+
+        // Disable button and show loading state
+        button.disabled = true;
+        button.textContent = 'Saving...';
+
+        // Save raw markdown (not HTML-rendered content) to the server
+        fetch('/edit_document', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ doc_path: currentDocPath, content: newContent })
+        })
+        .then(response => response.json())
+        .then(data => {
+            rawMarkdownContent = newContent;  // Update stored raw markdown
+            loadMarkdown(currentDocPath);  // Reload document to update display with HTML rendering
+            editArea.style.display = 'none';
+            display.style.display = 'block';
+            button.disabled = false;
+            button.textContent = originalText;
+
+            showNotification(data.message, 'success');
+        })
+        .catch(error => {
+            showNotification('An error occurred while saving.', 'error');
+            button.disabled = false;
+            button.textContent = originalText;
+        });
+    }
+
+    // Notification display function
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 500);
+    }, 3000);
+}
+
+	// Event listener for handling internal and external markdown link clicks within the document display area
+	document.getElementById('document-display').addEventListener('click', function(event) {
+		const target = event.target;
+		
+		// Check if the clicked element is a link
+		if (target.tagName === 'A') {
+			const href = target.getAttribute('href');
+
+			// Check if it’s an internal Markdown link (ending in .md)
+			if (href && href.endsWith('.md')) {
+				event.preventDefault(); // Prevent default navigation
+				const docPath = href; // Use the href directly as the path for internal links
+				loadMarkdown(docPath); // Load the specified markdown document
+			} 
+			// For external links (e.g., http, https), allow default behavior (open in a new tab)
+			else if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+				target.setAttribute('target', '_blank'); // Open external links in a new tab
+				target.setAttribute('rel', 'noopener noreferrer'); // Security best practices
+			}
+		}
+	});
+
+    // Code for mobile menu toggle functionality
+    if (window.innerWidth <= 768) {
+        const menuToggle = document.createElement('button');
+        menuToggle.className = 'menu-toggle';
+        menuToggle.innerHTML = '☰';
+        menuToggle.onclick = () => {
+            document.getElementById('sidebar').classList.toggle('active');
+        };
+        document.body.appendChild(menuToggle);
+
+        // Close sidebar when clicking outside of it
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+    }
+
+    // Adding basic animations for notifications
+    const styleSheet = document.createElement("style");
+    styleSheet.type = "text/css";
+    styleSheet.innerText = `
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #323232;
+            color: #fff;
+            padding: 15px 25px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+        .notification.success {
+            background-color: #4CAF50;
+        }
+        .notification.error {
+            background-color: #f44336;
+        }
+    `;
+    document.head.appendChild(styleSheet);
+	document.addEventListener("DOMContentLoaded", function() {
+		// Automatically load 'quickstart/index.md' on page load
+		loadMarkdown('quickstart/index.md');
+	});
+
+</script>
+
+
+</body>
+</html>

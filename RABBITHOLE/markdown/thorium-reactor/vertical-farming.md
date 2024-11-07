@@ -35,7 +35,7 @@ Biochar, a carbon-rich material produced through pyrolysis of organic matter, of
 - **Microbial Activity**: Biochar provides a habitat for beneficial microorganisms, promoting soil health and plant growth[^6].
 - **Carbon Sequestration**: Incorporating biochar into farming practices can contribute to long-term carbon storage, mitigating climate change[^7].
 
-<a href="#" data-md="markdown/ai-systems/biochar-production.md" class="button">Learn More About Biochar Production</a>
+[Learn More About Biochar Production](ai-systems/biochar-production.md)
 
 ---
 

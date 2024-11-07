@@ -6,27 +6,27 @@ Welcome to the Crabbe Automation documentation. This guide will help you navigat
 
 - **Pond AI Project**  
   Wildlife detection and monitoring using custom-trained AI models like YOLOv8 and FastSAM.  
-  <a href="#" data-md="markdown/ai-systems/pond-ai/index.md" class="link-button">Explore Pond AI</a>
+  [Explore Pond AI](ai-systems/pond-ai/index.md)
 
 - **Thorium Reactor Factory**  
   A vision for building scalable, automated thorium molten salt reactors to solve global energy problems.  
-  <a href="#" data-md="markdown/thorium-reactor/index.md" class="link-button">Explore Thorium Reactors</a>
+  [Explore Thorium Reactors](thorium-reactor/index.md)
 
 - **Museum Education Replacement**  
   An AI-powered, project-based learning initiative aimed at transforming traditional museum education.  
-  <a href="#" data-md="markdown/education/index.md" class="link-button">Explore Education Project</a>
+  [Explore Education Project](education/index.md)
 
 - **Factory Automation**  
   Enhancing American factory productivity with advanced control systems and automation technologies.  
-  <a href="#" data-md="markdown/automation/project-case-studies/factory-automation.md" class="link-button">Explore Factory Automation</a>
+  [Explore Factory Automation](automation/project-case-studies/factory-automation.md)
 
 - **Interstellar Seed of Life**  
   Developing infrastructure and systems to sustain life beyond Earth, creating a legacy for humanity.  
-  <a href="#" data-md="markdown/interstellar-seed/index.md" class="link-button">Explore Interstellar Seed</a>
+  [Explore Interstellar Seed](interstellar-seed/index.md)
 
 - **YOLO Custom Models Optimization**  
   Optimizing YOLO models for enhanced detection performance in various AI applications.  
-  <a href="#" data-md="markdown/ai-systems/yolo-optimization.md" class="link-button">Explore YOLO Optimization</a>
+  [Explore YOLO Optimization](ai-systems/yolo-optimization.md)
 
 Explore each section to dive into more details on how these projects interconnect.
 

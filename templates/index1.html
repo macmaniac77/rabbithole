@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maclaine Crabbe - Digital Space</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+    <style>
+        /* General page styling */
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #1b2b34; /* Dark industrial blue */
+            color: #d1e8e2; /* Light text color for contrast */
+        }
+        h1, h2, h3 { color: #79a7d3; } /* Light blue for headers */
+        h1 { border-bottom: 2px solid #79a7d3; padding-bottom: 10px; text-align: center; }
+        p, li { line-height: 1.6; }
+        a { color: #66d9ef; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        pre { background-color: #343d46; padding: 15px; border-radius: 5px; overflow-x: auto; color: #a7adba; }
+        code { background-color: #343d46; padding: 2px 5px; border-radius: 3px; }
+        ul { padding-left: 20px; }
+        div#content { max-width: 800px; margin: 0 auto; padding: 20px; background-color: #22303b; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 8px; }
+        .link-button, .nav-buttons a { background-color: #4a90e2; color: #ffffff; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-weight: 500; font-size: 14px; }
+        .link-button:hover, .nav-buttons a:hover { background-color: #3a7bd5; }
+        #sidebar { width: 200px; float: left; margin-right: 20px; background-color: #22303b; padding: 20px; border-radius: 8px; }
+        #sidebar ul { list-style-type: none; padding-left: 0; }
+        #sidebar li { margin-bottom: 5px; }
+        #sidebar li > a { font-weight: bold; }
+        #search-box input { width: 100%; padding: 10px; border-radius: 5px; background-color: #343d46; color: #d1e8e2; border: none; }
+
+        /* Modal styling */
+        .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 600px; background-color: #1b2b34; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); color: #d1e8e2; }
+        .modal textarea { width: 100%; height: 200px; margin-top: 10px; background-color: #22303b; color: #d1e8e2; padding: 10px; border-radius: 5px; border: 1px solid #343d46; }
+        .modal-buttons { text-align: right; margin-top: 15px; }
+        .modal-button { background-color: #4a90e2; color: #ffffff; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .modal-button:hover { background-color: #3a7bd5; }
+        .modal-close { color: #79a7d3; float: right; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar with navigation links -->
+    <div id="sidebar">
+        <div id="search-box">
+            <input type="text" id="search" placeholder="Search content..." onkeyup="filterContent()">
+        </div>
+        <ul id="folder-structure">
+            {{ render_folders(structure) }}
+        </ul>
+    </div>
+
+    <!-- Content display area -->
+    <div id="content">Select a document to view content...</div>
+
+    <!-- Navigation buttons -->
+    <div class="nav-buttons">
+        <a href="#" id="previous-button">Previous</a>
+        <a href="#" id="next-button">Next</a>
+        <a href="/">Return to Quickstart</a>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="modal">
+        <span class="modal-close" onclick="closeModal('edit-modal')">&times;</span>
+        <h2>Edit Document</h2>
+        <textarea id="edit-content"></textarea>
+        <div class="modal-buttons">
+            <button class="modal-button" onclick="saveEdit()">Save</button>
+        </div>
+    </div>
+
+    <!-- Generate Modal -->
+    <div id="generate-modal" class="modal">
+        <span class="modal-close" onclick="closeModal('generate-modal')">&times;</span>
+        <h2>Generate New Document</h2>
+        <textarea id="generate-context" placeholder="Provide context for the new document..."></textarea>
+        <div class="modal-buttons">
+            <button class="modal-button" onclick="generateDoc()">Generate</button>
+        </div>
+    </div>
+
+    <script>
+        // Functions for loading markdown content, filtering, and handling modals
+        let currentDocPath = "";  // Track the current document path
+
+        function loadMarkdown(docPath) {
+            currentDocPath = docPath;
+            fetch(`/view_document/${docPath}`)
+                .then(response => response.ok ? response.text() : Promise.reject(response.statusText))
+                .then(text => document.getElementById('content').innerHTML = marked.parse(text))
+                .catch(error => {
+                    console.error("Error loading document:", error);
+                    document.getElementById('content').innerHTML = '<p>Error loading content.</p>';
+                });
+        }
+
+        function filterContent() {
+            const input = document.getElementById('search').value.toLowerCase();
+            document.querySelectorAll('#folder-structure li').forEach(link => {
+                link.style.display = link.innerText.toLowerCase().includes(input) ? 'block' : 'none';
+            });
+        }
+
+        // Modal functions for edit and generate
+        function openModal(id) {
+            document.getElementById(id).style.display = 'block';
+        }
+        
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        function saveEdit() {
+            const content = document.getElementById('edit-content').value;
+            fetch('/edit_document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ doc_path: currentDocPath, content: content })
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error("Error saving document:", error));
+            closeModal('edit-modal');
+        }
+
+        function generateDoc() {
+            const context = document.getElementById('generate-context').value;
+            fetch('/generate_document', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ doc_path: currentDocPath, parent_context: context })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('content').innerHTML = marked.parse(data.content);
+            })
+            .catch(error => console.error("Error generating document:", error));
+            closeModal('generate-modal');
+        }
+
+        // Load initial content
+        document.querySelectorAll('#folder-structure a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                loadMarkdown(this.getAttribute('data-md'));
+            });
+        });
+    </script>
+
+</body>
+</html>

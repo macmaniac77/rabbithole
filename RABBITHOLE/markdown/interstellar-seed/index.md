@@ -6,19 +6,19 @@ The **Interstellar Seed of Life** project envisions humanity's expansion beyond 
 
 ## Sections:
 
-- <a href="#" data-md="markdown/interstellar-seed/space-habitats.md">Space Habitat Design</a>
+- [Space Habitat Design](interstellar-seed/space-habitats.md)
   Explore the architectural principles behind modular, expandable habitats that integrate with life support, energy, and resource systems.
 
-- <a href="#" data-md="markdown/interstellar-seed/bioproduction.md">Sustainable Biological Systems</a>
+- [Sustainable Biological Systems](interstellar-seed/bioproduction.md)
   Learn about bioproduction systems, including controlled-environment agriculture, oxygen generation, and water recycling, essential for long-term survival in space.
 
-- <a href="#" data-md="markdown/interstellar-seed/space-infrastructure.md">Space Infrastructure</a>
+- [Space Infrastructure](interstellar-seed/space-infrastructure.md)
   Discover the innovations in space infrastructure, focusing on energy generation, transportation, and resource extraction from celestial bodies like asteroids and moons.
 
-- <a href="#" data-md="markdown/interstellar-seed/research.md">Research on Space Sustainability</a>
+- [Research on Space Sustainability](interstellar-seed/research.md)
   Dive into the research focused on sustaining human life beyond Earth, with insights into closed-loop ecosystems, human biology in space, and long-term habitation.
 
-- <a href="#" data-md="markdown/interstellar-seed/energy-abundance.md">Clean Energy for Space Exploration</a>
+- [Clean Energy for Space Exploration](interstellar-seed/energy-abundance.md)
   Read about the cutting-edge energy technologies driving space exploration, such as thorium-based reactors and solar energy solutions for long-term missions.
 
 ---
