@@ -190,17 +190,17 @@
     }
 
     /* Link Styles */
-    #document-display a {
+    #document-display a, .user-context-container a { /* Apply to user context links too */
         color: var(--link-color);
         text-decoration: underline;
         transition: color var(--transition-speed);
     }
 
-    #document-display a:visited {
+    #document-display a:visited, .user-context-container a:visited {
         color: var(--link-visited-color);
     }
 
-    #document-display a:hover {
+    #document-display a:hover, .user-context-container a:hover {
         color: var(--link-hover-color);
     }
 
@@ -218,7 +218,7 @@
         max-width: calc(100vw - 60px);
     }
 
-    .document-container {
+    .document-container, .user-context-container {
         background-color: var(--bg-secondary);
         border-radius: 12px;
         padding: 25px;
@@ -236,6 +236,12 @@
         font-weight: 600;
         transition: all var(--transition-speed);
         margin-top: 15px;
+    }
+    
+    .button-small { 
+        padding: 6px 12px;
+        font-size: 0.9rem;
+        margin-top: 8px;
     }
 
     .button:hover {
@@ -257,7 +263,7 @@
 	.file-item.active {
 		background-color: var(--hover-bg);
 		border-radius: 4px;
-		color: var(--accent); /* Optional: change text color when active */
+		color: var(--accent); 
 	}
     textarea {
         width: 100%;
@@ -299,21 +305,20 @@
         font-size: 1.1rem;
     }
 
-    /* Markdown Content Styling */
 	#document-display h1, #document-display h2, #document-display h3 {
-		font-size: 1.5em; /* Adjust to preferred size */
+		font-size: 1.5em; 
 		font-weight: bold;
 		color: var(--accent);
 	}
 
 	#document-display ul, #document-display ol {
-		padding-left: 20px; /* Add indentation for lists */
+		padding-left: 20px; 
 		margin-bottom: 1em;
 	}
 
 	#document-display li {
 		line-height: 1.5;
-		font-size: 1.1rem; /* Adjust for readability */
+		font-size: 1.1rem; 
 	}
 
     #document-display p {
@@ -327,44 +332,33 @@
         font-family: 'Menlo', monospace;
     }
 
-    /* Syntax Highlighting */
     pre code {
         background-color: var(--bg-tertiary);
         padding: 12px;
         border-radius: 6px;
         overflow-x: auto;
     }
+    .user-context-container ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    .user-context-container li {
+        background-color: var(--bg-tertiary);
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--accent);
+    }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
-        #sidebar {
-            transform: translateX(-100%);
-        }
-
-        #sidebar.active {
-            transform: translateX(0);
-            width: 280px;
-        }
-
-        #content {
-            margin-left: 0;
-            max-width: 100vw;
-        }
-
-        #toggle-sidebar {
-            display: none;
-        }
-
+        #sidebar { transform: translateX(-100%); }
+        #sidebar.active { transform: translateX(0); width: 280px; }
+        #content { margin-left: 0; max-width: 100vw; }
+        #toggle-sidebar { display: none; }
         .menu-toggle {
-            display: block;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1001;
-            background-color: var(--accent);
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
+            display: block; position: fixed; top: 20px; left: 20px;
+            z-index: 1001; background-color: var(--accent);
+            padding: 10px; border-radius: 4px; cursor: pointer;
         }
     }
 </style>
@@ -382,6 +376,43 @@
 
     <!-- Main Content -->
     <div id="content">
+        <div class="user-context-container">
+            <h2>User Context</h2>
+            {% if user_context %}
+                <p>User ID: {{ user_context.user_id }}</p>
+                <p>Credits USD: ${{ "%.2f"|format(user_context.credits_usd) }}</p>
+                <p>Credits SAT: {{ user_context.credits_sat }} sats</p>
+                <p>Last Input: {{ user_context.last_input if user_context.last_input else 'None' }}</p>
+        
+                <h3>Active ValuePoints</h3>
+                {% if active_vps %}
+                    <ul>
+                    {% for vp in active_vps %}
+                        <li>
+                            <strong>{{ vp.title }}</strong> (Type: {{ vp.vp_type }})
+                            <br>
+                            {% if vp.interface %}
+                                Interface: <a href="#" onclick="loadMarkdown('{{ vp.interface }}', event)">{{ vp.interface }}</a>
+                            {% else %}
+                                Interface: N/A
+                            {% endif %}
+                            {% if vp.price_usd is not none %} | Price: ${{ "%.2f"|format(vp.price_usd) }} {% endif %}
+                            {% if vp.price_sat is not none %} | Price: {{ vp.price_sat }} sats {% endif %}
+                            <br>
+                            {% if vp.expires %} Expires: {{ vp.expires.strftime('%Y-%m-%d %H:%M') }} {% endif %}
+                            <br>
+                            <button class="button button-small" onclick="completeVP('{{ user_context.user_id }}', '{{ vp.id }}')">Complete VP</button>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No active ValuePoints.</p>
+                {% endif %}
+            {% else %}
+                <p>No user context loaded.</p>
+            {% endif %}
+        </div>
+
         <div class="document-container">
             <div id="document-display">Select a document to view content...</div>
             <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
@@ -404,29 +435,25 @@
     </div>
     <!-- Scripts -->
 <script>
-    // Configure marked.js renderer to handle internal and external links
     const renderer = new marked.Renderer();
-
     renderer.link = function(href, title, text) {
         if (href.endsWith('.md')) {
-            // Internal link: use loadMarkdown function
             return `<a href="#" onclick="loadMarkdown('${href}')">${text}</a>`;
         } else {
-            // External link: open in a new tab
             return `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
         }
     };
-
-    marked.setOptions({
-        renderer: renderer,
-    });
+    marked.setOptions({ renderer: renderer });
 
     let currentDocPath = null;
-    let rawMarkdownContent = "";  // Store raw markdown for editing only
-    let historyStack = [];        // Custom history stack
+    let rawMarkdownContent = "";  
+    let historyStack = [];        
 
-// Function to load and display a markdown document
 function loadMarkdown(docPath, event) {
+    if (event) { // Prevent default only if it's a real event
+        event.preventDefault(); 
+        event.stopPropagation();
+    }
     if (currentDocPath && currentDocPath !== docPath) {
         historyStack.push(currentDocPath);
     }
@@ -434,78 +461,71 @@ function loadMarkdown(docPath, event) {
 
     const display = document.getElementById('document-display');
     display.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
-
-    // Remove active class from all file items
     document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
-
-    // Highlight the selected document in the sidebar
-    if (event) {
-        event.stopPropagation();
+    
+    // If the event target is a file-item, add active class. 
+    // For VP interface links, there's no direct file-item to activate in the sidebar unless it's also in the tree.
+    if (event && event.currentTarget && event.currentTarget.classList.contains('file-item')) {
         event.currentTarget.classList.add('active');
     }
+    // If docPath is a UI interface, we might want to highlight a "virtual" item or nothing
+    // For now, just loading content.
 
-    // Fetch raw markdown and HTML content
     fetch(`/view_document/${docPath}`)
-        .then(response => response.ok ? response.json() : Promise.reject("Document not found"))
+        .then(response => response.ok ? response.json() : Promise.reject("Document not found or not a markdown file."))
         .then(data => {
-            rawMarkdownContent = data.markdown_content;  // Store raw markdown for editing
-            const htmlContent = data.html_content;  // Use HTML content for display
-
-            display.innerHTML = htmlContent;  // Show HTML in the display area
-            document.getElementById('edit-textarea').value = rawMarkdownContent;  // Load raw markdown in editor
+            rawMarkdownContent = data.markdown_content;  
+            display.innerHTML = data.html_content;  
+            document.getElementById('edit-textarea').value = rawMarkdownContent;  
             document.getElementById('edit-button').style.display = 'block';
-
-            // Initialize syntax highlighting
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
         })
         .catch(error => {
             display.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
+            document.getElementById('edit-button').style.display = 'none'; // Hide edit for non-docs
         });
 }
 
-// Function to enable editing mode with raw markdown
 function enableEdit() {
-    const editArea = document.getElementById('edit-area');
-    const display = document.getElementById('document-display');
-
-    editArea.style.display = 'block';
-    display.style.display = 'none';
-
-    // Load raw markdown content into textarea for editing
+    document.getElementById('edit-area').style.display = 'block';
+    document.getElementById('document-display').style.display = 'none';
     document.getElementById('edit-textarea').value = rawMarkdownContent;
     document.getElementById('edit-textarea').focus();
 }
 
-// Function to save edited markdown content back to the server
 function saveEdit() {
-    const editArea = document.getElementById('edit-area');
-    const display = document.getElementById('document-display');
     const newContent = document.getElementById('edit-textarea').value;
+    const currentUserId = '{{ user_context.user_id if user_context else "default_user" }}'; // Get from template
+    // Make sure currentDocPath is a valid path for editing (not a non-MD interface)
+    if (!currentDocPath || !currentDocPath.endsWith('.md')) {
+        showNotification('Cannot edit this content type.', 'error');
+        return;
+    }
 
     fetch('/edit_document', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doc_path: currentDocPath, content: newContent })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
+        body: JSON.stringify({ doc_path: currentDocPath, content: newContent, user_id: currentUserId }) // user_id might be redundant if taken from JWT
     })
-    .then(response => response.json())
-    .then(data => {
-        rawMarkdownContent = newContent;  // Update stored raw markdown
-        loadMarkdown(currentDocPath);  // Reload document to update display with HTML rendering
-        editArea.style.display = 'none';
-        display.style.display = 'block';
+    .then(response => response.json().then(data => ({ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (!ok) throw new Error(data.message || 'Save failed');
+        rawMarkdownContent = newContent;  
+        loadMarkdown(currentDocPath); 
+        document.getElementById('edit-area').style.display = 'none';
+        document.getElementById('document-display').style.display = 'block';
         showNotification(data.message, 'success');
     })
     .catch(error => {
-        showNotification('An error occurred while saving.', 'error');
+        showNotification(`An error occurred while saving: ${error.message}`, 'error');
     });
 }
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('content');
     const toggleBtn = document.getElementById('toggle-sidebar');
-
     sidebar.classList.toggle('collapsed');
     content.classList.toggle('expanded');
     toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
@@ -513,7 +533,6 @@ function toggleSidebar() {
 function toggleFolder(element) {
     const folderContent = element.parentElement.querySelector('.folder-content');
     const folderIcon = element.querySelector('.folder-icon');
-
     folderContent.classList.toggle('expanded');
     folderIcon.classList.toggle('expanded');
 }
@@ -521,224 +540,155 @@ function toggleFolder(element) {
 function generateDocument() {
     const operation = document.getElementById('operation').value;
     const contextText = document.getElementById('context-text').value;
+    const currentUserId = '{{ user_context.user_id if user_context else "default_user" }}';
     const button = event.target;
     const originalText = button.textContent;
-
-    // Disable button and show loading state
-    button.disabled = true;
-    button.textContent = 'Processing...';
+    button.disabled = true; button.textContent = 'Processing...';
 
     fetch('/generate_document', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
         body: JSON.stringify({
-            doc_path: currentDocPath,
+            doc_path: currentDocPath, 
             operation: operation,
-            context_text: contextText
+            context_text: contextText,
+            user_id: currentUserId // user_id might be redundant if taken from JWT
         })
     })
-    .then(response => response.json())
-    .then(data => {
+    .then(response => response.json().then(data => ({ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (!ok) throw new Error(data.message || 'Generation failed');
         showNotification(data.message, 'success');
-        if (operation === 'generate') {
-            // Reload the page to update the folder structure
-            location.reload();
+        if (data.doc_path) {
+            if (operation === 'generate') { location.reload(); } 
+            else { loadMarkdown(data.doc_path); }
         } else {
-            loadMarkdown(currentDocPath);
+            if (operation === 'generate') location.reload();
+            else if (currentDocPath) loadMarkdown(currentDocPath);
         }
-        // Reset form
         document.getElementById('context-text').value = '';
     })
-    .catch(error => {
-        showNotification('An error occurred during generation.', 'error');
-    })
-    .finally(() => {
-        // Reset button state
-        button.disabled = false;
-        button.textContent = originalText;
-    });
+    .catch(error => { showNotification(`An error occurred during generation: ${error.message}`, 'error'); })
+    .finally(() => { button.disabled = false; button.textContent = originalText; });
 }
 
-    // Function to go back to the previous document in the history
-    function goBack() {
-        if (historyStack.length > 0) {
-            const previousDocPath = historyStack.pop();
-            loadMarkdown(previousDocPath);  // Load the previous document
-        } else {
-            showNotification("No previous document to go back to.", "error");
-        }
+function goBack() {
+    if (historyStack.length > 0) { loadMarkdown(historyStack.pop()); } 
+    else { showNotification("No previous document to go back to.", "error"); }
+}
+window.addEventListener("popstate", (event) => { goBack(); });
+
+document.addEventListener("DOMContentLoaded", () => {
+    const backButton = document.createElement("button");
+    backButton.textContent = "Back"; backButton.classList.add("button");
+    backButton.style.marginBottom = "10px"; backButton.onclick = goBack;
+    const contentDiv = document.getElementById('content');
+    if (contentDiv.firstChild) { contentDiv.insertBefore(backButton, contentDiv.firstChild.nextSibling); } 
+    else { contentDiv.appendChild(backButton); }
+    
+    // Automatically load 'quickstart/index.md' or a default page
+    // Check if a specific document is requested via URL hash, e.g. #quickstart/index.md
+    const initialDocPath = window.location.hash ? window.location.hash.substring(1) : 'quickstart/index.md';
+    if (initialDocPath) {
+        loadMarkdown(initialDocPath);
     }
+});
 
-    // Add an event listener to enable the back button functionality
-    window.addEventListener("popstate", (event) => {
-        goBack();
-    });
-
-    // Add a back button to the page with an onclick handler
-    document.addEventListener("DOMContentLoaded", () => {
-        const backButton = document.createElement("button");
-        backButton.textContent = "Back";
-        backButton.classList.add("button");
-        backButton.style.marginBottom = "10px";
-        backButton.onclick = goBack;
-
-        document.getElementById('content').prepend(backButton);  // Add the button at the top of content
-    });
-
-    // Function to toggle the sidebar
-    function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const content = document.getElementById('content');
-        const toggleBtn = document.getElementById('toggle-sidebar');
-
-        sidebar.classList.toggle('collapsed');
-        content.classList.toggle('expanded');
-        toggleBtn.textContent = sidebar.classList.contains('collapsed') ? '❯' : '❮';
-    }
-
-    // Function to toggle folders in the document sidebar
-    function toggleFolder(element) {
-        const folderContent = element.parentElement.querySelector('.folder-content');
-        const folderIcon = element.querySelector('.folder-icon');
-
-        folderContent.classList.toggle('expanded');
-        folderIcon.classList.toggle('expanded');
-    }
-
-    // Function to enable editing mode with raw markdown
-    function enableEdit() {
-        const editArea = document.getElementById('edit-area');
-        const display = document.getElementById('document-display');
-
-        editArea.style.display = 'block';
-        display.style.display = 'none';
-
-        // Load raw markdown content into textarea for editing
-        document.getElementById('edit-textarea').value = rawMarkdownContent;
-        document.getElementById('edit-textarea').focus();
-    }
-
-    // Function to save edited markdown content back to the server
-    function saveEdit() {
-        const editArea = document.getElementById('edit-area');
-        const display = document.getElementById('document-display');
-        const newContent = document.getElementById('edit-textarea').value;
-        const button = event.target;
-        const originalText = button.textContent;
-
-        // Disable button and show loading state
-        button.disabled = true;
-        button.textContent = 'Saving...';
-
-        // Save raw markdown (not HTML-rendered content) to the server
-        fetch('/edit_document', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ doc_path: currentDocPath, content: newContent })
-        })
-        .then(response => response.json())
-        .then(data => {
-            rawMarkdownContent = newContent;  // Update stored raw markdown
-            loadMarkdown(currentDocPath);  // Reload document to update display with HTML rendering
-            editArea.style.display = 'none';
-            display.style.display = 'block';
-            button.disabled = false;
-            button.textContent = originalText;
-
-            showNotification(data.message, 'success');
-        })
-        .catch(error => {
-            showNotification('An error occurred while saving.', 'error');
-            button.disabled = false;
-            button.textContent = originalText;
-        });
-    }
-
-    // Notification display function
 function showNotification(message, type) {
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
-
     setTimeout(() => {
         notification.style.opacity = '0';
         setTimeout(() => notification.remove(), 500);
     }, 3000);
 }
 
-	// Event listener for handling internal and external markdown link clicks within the document display area
-	document.getElementById('document-display').addEventListener('click', function(event) {
-		const target = event.target;
-		
-		// Check if the clicked element is a link
-		if (target.tagName === 'A') {
-			const href = target.getAttribute('href');
+document.getElementById('document-display').addEventListener('click', function(event) {
+    const target = event.target;
+    if (target.tagName === 'A') {
+        const href = target.getAttribute('href');
+        if (href && href.endsWith('.md')) {
+            event.preventDefault(); 
+            loadMarkdown(href); 
+        } else if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
+            target.setAttribute('target', '_blank'); 
+            target.setAttribute('rel', 'noopener noreferrer'); 
+        }
+    }
+});
 
-			// Check if it’s an internal Markdown link (ending in .md)
-			if (href && href.endsWith('.md')) {
-				event.preventDefault(); // Prevent default navigation
-				const docPath = href; // Use the href directly as the path for internal links
-				loadMarkdown(docPath); // Load the specified markdown document
-			} 
-			// For external links (e.g., http, https), allow default behavior (open in a new tab)
-			else if (href && (href.startsWith('http://') || href.startsWith('https://'))) {
-				target.setAttribute('target', '_blank'); // Open external links in a new tab
-				target.setAttribute('rel', 'noopener noreferrer'); // Security best practices
-			}
-		}
-	});
+if (window.innerWidth <= 768) {
+    const menuToggle = document.createElement('button');
+    menuToggle.className = 'menu-toggle'; menuToggle.innerHTML = '☰';
+    menuToggle.onclick = () => { document.getElementById('sidebar').classList.toggle('active'); };
+    document.body.appendChild(menuToggle);
+    document.addEventListener('click', (e) => {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
+            sidebar.classList.remove('active');
+        }
+    });
+}
 
-    // Code for mobile menu toggle functionality
-    if (window.innerWidth <= 768) {
-        const menuToggle = document.createElement('button');
-        menuToggle.className = 'menu-toggle';
-        menuToggle.innerHTML = '☰';
-        menuToggle.onclick = () => {
-            document.getElementById('sidebar').classList.toggle('active');
-        };
-        document.body.appendChild(menuToggle);
+const styleSheet = document.createElement("style");
+styleSheet.type = "text/css";
+styleSheet.innerText = `
+    .notification {
+        position: fixed; top: 20px; right: 20px;
+        background-color: #323232; color: #fff;
+        padding: 15px 25px; border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        opacity: 1; transition: opacity 0.5s ease-out;
+    }
+    .notification.success { background-color: #4CAF50; }
+    .notification.error { background-color: #f44336; }
+`;
+document.head.appendChild(styleSheet);
 
-        // Close sidebar when clicking outside of it
-        document.addEventListener('click', (e) => {
-            const sidebar = document.getElementById('sidebar');
-            if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
+async function completeVP(userId, vpId) {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        showNotification('You must be logged in to complete a VP.', 'error');
+        // Optionally, redirect to a login page or show a login modal
+        // window.location.href = '/login.html'; // Example redirect
+        return;
     }
 
-    // Adding basic animations for notifications
-    const styleSheet = document.createElement("style");
-    styleSheet.type = "text/css";
-    styleSheet.innerText = `
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: #323232;
-            color: #fff;
-            padding: 15px 25px;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            opacity: 1;
-            transition: opacity 0.5s ease-out;
+    try {
+        const response = await fetch('/vp/complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Send JWT token
+            },
+            // user_id is now taken from JWT on backend, not needed in body.
+            body: JSON.stringify({ vp_id: vpId }), 
+        });
+        const result = await response.json();
+        if (response.ok) {
+            showNotification('ValuePoint completed: ' + (result.message || 'Success'), 'success');
+            window.location.reload(); 
+        } else {
+            showNotification('Error completing ValuePoint: ' + (result.message || result.error || 'Unknown error'), 'error');
         }
-        .notification.success {
-            background-color: #4CAF50;
-        }
-        .notification.error {
-            background-color: #f44336;
-        }
-    `;
-    document.head.appendChild(styleSheet);
-	document.addEventListener("DOMContentLoaded", function() {
-		// Automatically load 'quickstart/index.md' on page load
-		loadMarkdown('quickstart/index.md');
-	});
+    } catch (error) {
+        console.error('Failed to complete VP:', error);
+        showNotification('Failed to complete VP. See console for details.', 'error');
+    }
+}
+
+// --- Auth Token Management (Example) ---
+// Store token after login (assuming /login endpoint returns it as { "access_token": "..." })
+// fetch('/login', { method: 'POST', body: JSON.stringify({username: 'u', password: 'p'})})
+// .then(res => res.json()).then(data => {
+//     if (data.access_token) localStorage.setItem('accessToken', data.access_token);
+// });
+
+// To logout or clear token:
+// localStorage.removeItem('accessToken');
 
 </script>
-
-
 </body>
 </html>
