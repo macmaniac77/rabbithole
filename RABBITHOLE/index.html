@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maclaine Crabbe - Digital Space</title>
     <script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
     <style>
         /* General page styling */
         body {
@@ -196,9 +198,46 @@
             color: #d1e8e2;
         }
 
+        #hyperlink-network {
+            width: 100%;
+            height: 400px; /* Adjust as needed */
+            border: 1px solid #79a7d3; /* Light blue border */
+            margin-bottom: 20px;
+            background-color: #22303b; /* Same as content area for consistency */
+        }
     </style>
 </head>
 <body>
+
+    <div id="network-container" style="margin-bottom: 20px;">
+        <h2>Content Network</h2>
+        <div id="hyperlink-network"></div>
+    </div>
+
+    <div id="ai-controls" style="padding: 20px; margin-bottom: 20px; background-color: #2c3e50; border-radius: 8px;">
+        <h2>AI Content Tools</h2>
+        <div>
+            <label for="ai-prompt-content">Content Prompt:</label><br>
+            <textarea id="ai-prompt-content" rows="3" style="width: 98%; margin-bottom: 10px;"></textarea><br>
+
+            <label for="ai-prompt-title">Title Prompt (e.g., 'A catchy title for a page about X'):</label><br>
+            <input type="text" id="ai-prompt-title" style="width: 98%; margin-bottom: 10px;"><br>
+
+            <label for="ai-file-path">File Path (e.g., 'new-topic/my-page.md' - relative to RABBITHOLE/markdown/):</label><br>
+            <input type="text" id="ai-file-path" style="width: 98%; margin-bottom: 10px;"><br>
+
+            <label for="ai-commit-message">Commit Message:</label><br>
+            <input type="text" id="ai-commit-message" style="width: 98%; margin-bottom: 10px;"><br>
+
+            <input type="checkbox" id="ai-is-update" style="margin-bottom: 10px;">
+            <label for="ai-is-update">Is this an update to an existing file? (If checked, file path must exist)</label><br>
+
+            <button id="ai-generate-button" class="link-button">Generate & Commit Document</button>
+        </div>
+        <div id="ai-status" style="margin-top: 15px; padding: 10px; background-color: #34495e; border-radius: 4px; min-height: 20px;">
+            Status messages will appear here...
+        </div>
+    </div>
 
     <div id="sidebar">
         <div id="search-box">
@@ -340,6 +379,7 @@
 </div>
 
 <script>
+    let currentlyLoadedMarkdownPath = '';
     // Array of main project paths in the sidebar
     const projects = [
         'markdown/quickstart/index.md',
@@ -360,7 +400,7 @@
         } else {
             currentIndex = (currentIndex - 1 + projects.length) % projects.length;
         }
-        
+
         loadMarkdown(projects[currentIndex]);
     }
 
@@ -388,6 +428,7 @@
     // Function to load markdown file dynamically
     function loadMarkdown(file) {
         console.log('Loading Markdown file:', file);
+        currentlyLoadedMarkdownPath = file; // Set current path
         // Add a cache-busting parameter to the URL
         const cacheBuster = `?cb=${new Date().getTime()}`;
         fetch(file + cacheBuster)
@@ -412,28 +453,6 @@
     let currentIndex = 0;
     loadMarkdown(projects[currentIndex]);
 
-    // Function to navigate to the next or previous project
-    function navigateProject(direction) {
-        if (direction === 'next') {
-            currentIndex = (currentIndex + 1) % projects.length;
-        } else {
-            currentIndex = (currentIndex - 1 + projects.length) % projects.length;
-        }
-        
-        loadMarkdown(projects[currentIndex]);
-    }
-
-    // Add event listeners to the navigation buttons
-    document.getElementById('next-button').addEventListener('click', function(e) {
-        e.preventDefault();
-        navigateProject('next');
-    });
-
-    document.getElementById('previous-button').addEventListener('click', function(e) {
-        e.preventDefault();
-        navigateProject('previous');
-    });
-
     // Add event listeners to all sidebar links
     document.querySelectorAll('#sidebar a[data-md]').forEach(link => {
         link.addEventListener('click', function(e) {
@@ -441,15 +460,100 @@
             loadMarkdown(this.getAttribute('data-md'));
         });
     });
+
     // Function to add event listeners to content links
     function addContentEventListeners() {
-        document.querySelectorAll('#content a[data-md]').forEach(link => {
+        const contentArea = document.getElementById('content');
+        if (!contentArea) return;
+
+        contentArea.querySelectorAll('a[href]').forEach(link => {
             link.addEventListener('click', function(e) {
-                e.preventDefault();
-                loadMarkdown(this.getAttribute('data-md'));
+                const href = this.getAttribute('href');
+
+                // 1. Check for external links or special protocols
+                if (href.startsWith('http://') || href.startsWith('https://') ||
+                    href.startsWith('mailto:') || href.startsWith('tel:')) {
+                    // For external links, let the browser handle it (or open in new tab)
+                    this.target = '_blank'; // Optional: open external links in new tab
+                    return;
+                }
+
+                // 2. Check for on-page anchor links
+                if (href.startsWith('#')) {
+                    // For on-page anchors, let the browser handle default scrolling
+                    return;
+                }
+
+                // 3. Prevent default for internal links that are not empty hrefs
+                if (href && href !== '#') {
+                   e.preventDefault();
+                } else if (href === '#') {
+                   // If href is just "#", also prevent default as it might be placeholder
+                   e.preventDefault();
+                   return; // Do nothing for empty hash links
+                } else {
+                   return; // No href or empty href, do nothing
+                }
+
+
+                // 4. Resolve path for internal markdown links
+                // Assume links ending with .md are markdown links.
+                // Other relative links might also be markdown links if they don't have extensions.
+                if (href.endsWith('.md') || !href.includes('.')) { // Consider links without extension as potential .md
+                    let resolvedPath = '';
+                    if (href.startsWith('/')) {
+                        // Absolute path from site root - assume it's already correct if it starts with 'markdown/'
+                        if (href.startsWith('/markdown/')) {
+                           resolvedPath = href.substring(1); // remove leading /
+                        } else {
+                            // Or, if it's like /foo/bar.md, it's hard to know the base.
+                            // For now, we'll assume such links are not used or correctly point within markdown source.
+                            // A safer bet for absolute-looking paths is to prepend 'markdown/' if not present
+                            resolvedPath = href.startsWith('markdown/') ? href : 'markdown' + href;
+                        }
+                    } else {
+                        // Relative path
+                        if (!currentlyLoadedMarkdownPath) {
+                            console.error("Error: currentlyLoadedMarkdownPath is not set. Cannot resolve relative link.");
+                            // Assuming setAIStatus is available for user feedback
+                            if(typeof setAIStatus === 'function') setAIStatus("Error: Cannot resolve relative link, current page path unknown.", true);
+                            return;
+                        }
+                        // Get directory of the current file
+                        const currentDir = currentlyLoadedMarkdownPath.substring(0, currentlyLoadedMarkdownPath.lastIndexOf('/') + 1);
+                        resolvedPath = currentDir + href;
+                    }
+
+                    // Normalize the path (e.g., resolve '..' and '.')
+                    const pathParts = resolvedPath.split('/');
+                    const normalizedParts = [];
+                    for (const part of pathParts) {
+                        if (part === '..') {
+                            if (normalizedParts.length > 0 && normalizedParts[normalizedParts.length -1] !== 'markdown') { // Don't go above 'markdown'
+                                normalizedParts.pop();
+                            }
+                        } else if (part !== '.' && part !== '') {
+                            normalizedParts.push(part);
+                        }
+                    }
+                    resolvedPath = normalizedParts.join('/');
+
+                    console.log(`Internal link clicked. Original href: "${href}", Resolved path: "${resolvedPath}" from "${currentlyLoadedMarkdownPath}"`);
+                    loadMarkdown(resolvedPath);
+                } else {
+                    // For other relative links (e.g., to images, other non-md files), let browser handle
+                    // or if they were meant to be markdown and had an extension, they won't be caught here.
+                    console.log(`Relative link with unhandled extension: ${href}. Allowing default behavior for now, but this might be an error.`);
+                    // To be safe, if we are here, it means it's not an external, not an anchor,
+                    // not explicitly .md. We should probably prevent default and log an error or warning.
+                    e.preventDefault();
+                    console.warn(`Unhandled relative link type: ${href}. Navigation prevented.`);
+                    if(typeof setAIStatus === 'function') setAIStatus(`Warning: Link to '${href}' was not followed as its type is unhandled in SPA mode.`, true);
+                }
             });
         });
     }
+
     // Search and filter function
     function filterContent() {
         let input = document.getElementById('search').value.toLowerCase();
@@ -464,6 +568,199 @@
             }
         });
     }
+
+   // --- Start of Hyperlink Network functions ---
+
+   // Sample folder structure data (replace with dynamic data later)
+   const sampleFolderStructure = [
+       { type: 'folder', name: 'quickstart', children: [
+           { type: 'file', name: 'index.md', path: 'markdown/quickstart/index.md' }
+       ]},
+       { type: 'folder', name: 'vending', children: [
+           { type: 'file', name: 'index.md', path: 'markdown/vending/index.md' },
+           { type: 'file', name: 'contract.md', path: 'markdown/vending/contract.md' }
+       ]},
+       { type: 'folder', name: 'automation', children: [
+           { type: 'file', name: 'index.md', path: 'markdown/automation/index.md' },
+           { type: 'folder', name: 'project-case-studies', children: [
+               { type: 'file', name: 'factory-automation.md', path: 'markdown/automation/project-case-studies/factory-automation.md'}
+           ]}
+       ]},
+       { type: 'file', name: 'agents.md', path: 'markdown/agents.md'}
+   ];
+
+   function processStructure(items, parentId, nodes, edges, currentPath = 'markdown') {
+       let idCounter = parentId ? parentId * 100 : 0;
+
+       items.forEach(item => {
+           const nodeId = ++idCounter;
+           let label = item.name;
+           if (item.type === 'file' && label.endsWith('.md')) {
+               label = label.substring(0, label.length - 3);
+           }
+
+           nodes.push({
+               id: nodeId,
+               label: label,
+               group: item.type,
+               filePath: item.type === 'file' ? item.path : null,
+               title: item.path || item.name
+           });
+
+           if (parentId) {
+               edges.push({ from: parentId, to: nodeId });
+           }
+
+           if (item.type === 'folder' && item.children) {
+               const folderPathForChildren = item.path ? item.path : (currentPath + '/' + item.name);
+               idCounter = processStructure(item.children, nodeId, nodes, edges, folderPathForChildren, idCounter);
+           }
+       });
+       return idCounter;
+   }
+
+   function initializeHyperlinkNetwork(folderStructure) {
+       const nodes = [];
+       const edges = [];
+       const rootNodeId = 0;
+       nodes.push({id: rootNodeId, label: 'Rabbit Hole Root', group: 'root', title: 'RABBITHOLE/markdown'});
+
+       processStructure(folderStructure, rootNodeId, nodes, edges, 'markdown');
+
+       const container = document.getElementById('hyperlink-network');
+       const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+       const options = {
+           layout: {
+               hierarchical: { enabled: false },
+               randomSeed: 2
+           },
+           interaction: { hover: true, tooltipDelay: 200 },
+           physics: {
+               forceAtlas2Based: {
+                   gravitationalConstant: -30,
+                   centralGravity: 0.005,
+                   springLength: 100,
+                   springConstant: 0.18
+               },
+               maxVelocity: 146,
+               solver: 'forceAtlas2Based',
+               timestep: 0.35,
+               stabilization: {iterations: 150}
+           },
+           nodes: {
+               shape: 'box', margin: 10, font: { color: '#d1e8e2' },
+               color: {
+                  border: '#79a7d3', background: '#2c3e50',
+                  highlight: { border: '#66d9ef', background: '#34495e' },
+                  hover: { border: '#66d9ef', background: '#34495e' }
+               },
+           },
+           edges: {
+               width: 0.15, color: { color:'#848484', highlight:'#add8e6', hover: '#add8e6' },
+               arrows: { to: { enabled: true, scaleFactor:0.5 } }
+           }
+       };
+
+       const network = new vis.Network(container, data, options);
+
+       network.on('click', function(params) {
+           if (params.nodes.length > 0) {
+               const nodeId = params.nodes[0];
+               const node = data.nodes.get(nodeId);
+               if (node && node.filePath) {
+                   console.log('Clicked file node:', node.filePath);
+                   loadMarkdown(node.filePath);
+               } else if (node) {
+                   console.log('Clicked folder or root node:', node.label);
+               }
+           }
+       });
+   }
+   // --- End of Hyperlink Network functions ---
+
+   // --- Start of new AI interaction functions ---
+   function setAIStatus(message, isError = false) {
+       const statusDiv = document.getElementById('ai-status');
+       statusDiv.textContent = message;
+       statusDiv.style.color = isError ? 'red' : '#d1e8e2';
+   }
+
+   async function handleAIDocumentGeneration() {
+       setAIStatus('Starting AI document generation...');
+       const contentPrompt = document.getElementById('ai-prompt-content').value;
+       const titlePrompt = document.getElementById('ai-prompt-title').value;
+       const filePath = document.getElementById('ai-file-path').value;
+       const commitMessage = document.getElementById('ai-commit-message').value;
+       const isUpdate = document.getElementById('ai-is-update').checked;
+
+       if (!contentPrompt || !titlePrompt || !filePath || !commitMessage) {
+           setAIStatus('Error: All fields (Content Prompt, Title Prompt, File Path, Commit Message) are required.', true);
+           return;
+       }
+
+       try {
+           setAIStatus('1/2: Generating content with Gemini...');
+           const generateResponse = await fetch('/.netlify/functions/generateContent', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                   prompt_text: contentPrompt,
+                   title_prompt_text: titlePrompt
+               }),
+           });
+
+           if (!generateResponse.ok) {
+               const errorData = await generateResponse.json();
+               throw new Error(`Failed to generate content: ${generateResponse.status} ${generateResponse.statusText} - ${errorData.error || errorData.details}`);
+           }
+           const generatedData = await generateResponse.json();
+
+           let finalFilePath = filePath;
+           if (!finalFilePath.toLowerCase().endsWith('.md')) {
+                const sanitizedTitle = generatedData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+                const fileName = sanitizedTitle ? `${sanitizedTitle}.md` : 'unnamed-page.md';
+                if (finalFilePath.endsWith('/')) {
+                    finalFilePath += fileName;
+                } else if (finalFilePath === '' || finalFilePath.split('/').pop().indexOf('.') === -1) {
+                    finalFilePath = (finalFilePath === '' ? '' : finalFilePath + '/') + fileName;
+                }
+           }
+
+           setAIStatus('2/2: Committing document to GitHub...');
+           const commitResponse = await fetch('/.netlify/functions/commitFileToGitHub', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({
+                   filePath: finalFilePath,
+                   content: generatedData.content,
+                   commitMessage: commitMessage,
+                   isUpdate: isUpdate,
+               }),
+           });
+
+           if (!commitResponse.ok) {
+               const errorData = await commitResponse.json();
+               throw new Error(`Failed to commit file: ${commitResponse.status} ${commitResponse.statusText} - ${errorData.error || errorData.details}`);
+           }
+           const commitData = await commitResponse.json();
+           setAIStatus(`Success! ${commitData.message}. The page should be live after Netlify rebuilds.`);
+       } catch (error) {
+           console.error('AI Document Generation Error:', error);
+           setAIStatus(`Error: ${error.message}`, true);
+       }
+   }
+   document.getElementById('ai-generate-button').addEventListener('click', handleAIDocumentGeneration);
+   // --- End of new AI interaction functions ---
+
+   try {
+       initializeHyperlinkNetwork(sampleFolderStructure);
+   } catch (e) {
+       console.error("Error initializing hyperlink network:", e);
+       const networkContainer = document.getElementById('hyperlink-network');
+       if (networkContainer) {
+           networkContainer.innerHTML = "<p style='color:red;'>Error initializing content network graph. See console for details.</p>";
+       }
+   }
 </script>
 
 </body>
