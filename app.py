@@ -1,14 +1,28 @@
 from flask import Flask, request, jsonify, render_template, abort
 import os
 from pathlib import Path
-from openai import OpenAI
+import google.generativeai as genai # Changed
 from markupsafe import Markup
 import markdown2  # To parse markdown
 import re
 import html  # Import for escaping special characters
 
 app = Flask(__name__)
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Configure Gemini client
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if not GEMINI_API_KEY:
+    # This part is fine, a truly missing key should be an error
+    raise ValueError("GEMINI_API_KEY environment variable not set.")
+try:
+    genai.configure(api_key=GEMINI_API_KEY)
+    print("Gemini API configured successfully.") # Added for feedback
+except Exception as e:
+    # If configure fails (e.g. due to fake key format for testing),
+    # print a warning but allow app to continue starting.
+    # Subsequent API calls will then fail, which tests should handle.
+    print(f"Warning: Gemini API configuration failed: {e}. App will start, but Gemini calls will likely fail.")
+
 BASE_DIR = Path("RABBITHOLE/markdown")
 
 def get_folder_structure(base_path):
@@ -39,7 +53,7 @@ def get_folder_structure(base_path):
     # Combine folders and files, folders first
     structure.extend(folders)
     structure.extend(files)
-    
+
     return structure
 
 def read_document(path):
@@ -49,7 +63,7 @@ def read_document(path):
 def write_document(path, content):
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
-        
+
 @app.route('/')
 def index():
     structure = get_folder_structure(BASE_DIR)
@@ -60,10 +74,10 @@ def view_document(doc_path):
     doc_path = BASE_DIR / doc_path
     if not doc_path.is_file():
         abort(404, description="Document not found")
-    
+
     content = read_document(doc_path)  # Fetch raw markdown content
     html_content = markdown2.markdown(content)  # Convert Markdown to HTML
-    
+
     # Return both HTML and Markdown as JSON
     return jsonify({
         "html_content": html_content,
@@ -99,37 +113,31 @@ def generate_document():
     else:
         prompt = f"Generate a new document using the following context:\n\n{context_text}"
 
-    # Debug: Print the prompt that will be sent to OpenAI
-    #print("Generated Prompt for OpenAI:", prompt)
+    # Debug: Print the prompt that will be sent to Gemini
+    #print("Generated Prompt for Gemini:", prompt)
 
-    # Generate content using OpenAI
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=4000
-    )
+    # Generate content using Gemini
+    model = genai.GenerativeModel('gemini-pro')
+    response = model.generate_content(prompt)
 
-    # Debug: Print the full OpenAI response to inspect
-    #print("OpenAI Response:", response)
+    # Debug: Print the full Gemini response to inspect
+    #print("Gemini Response:", response)
 
-    new_content = response.choices[0].message.content
+    new_content = response.text # Changed
 
     # If we are generating a new document, we need to create a new file
     if operation == 'generate':
-        # Use OpenAI to generate a title
+        # Use Gemini to generate a title
         title_prompt = f"Provide a short title based on the following context:\n\n{context_text}"
-        #print("Generated Title Prompt for OpenAI:", title_prompt)
+        #print("Generated Title Prompt for Gemini:", title_prompt)
 
-        title_response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": title_prompt}],
-            max_tokens=40
-        )
+        title_model = genai.GenerativeModel('gemini-pro') # Using gemini-pro for title too
+        title_response = title_model.generate_content(title_prompt)
 
         # Debug: Print the title response to inspect
         print("Title Response:", title_response)
 
-        title = title_response.choices[0].message.content
+        title = title_response.text # Changed
         file_name = sanitize_filename(title.strip()) + ".md"
 
         # Construct the path for the new document
@@ -176,4 +184,5 @@ def render_folders(structure):
 
 app.jinja_env.globals.update(render_folders=render_folders)
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("FLASK_RUN_PORT", 5000))
+    app.run(debug=True, port=port)
