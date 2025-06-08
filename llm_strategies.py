@@ -2,7 +2,21 @@ from typing import Dict, Optional # Add Optional
 
 def get_prompt_for_bigger(document_content: str, document_id: str, path_history_summary: Optional[str] = None) -> str:
     """
-    Generates a prompt for the LLM to expand the given document content.
+    Generates a prompt for an LLM to expand the content of a given document.
+
+    The prompt instructs the LLM to significantly increase the detail,
+    explanations, and supporting information of the `document_content`.
+    It emphasizes maintaining coherent flow and adhering to the original subject.
+    The LLM is explicitly told not to include introductory or concluding phrases.
+    If `path_history_summary` is provided, it's included in the prompt to give
+    the LLM context about how the user arrived at the current document.
+
+    :param document_content: The original text content of the document to be expanded.
+    :param document_id: The identifier (e.g., title or filename) of the document.
+    :param path_history_summary: Optional string summarizing the user's navigation
+                                 path to this document.
+    :return: A string containing the formatted prompt for the LLM, expecting
+             the expanded text as its output.
     """
     history_context_str = ""
     if path_history_summary:
@@ -34,6 +48,33 @@ Expanded content:
     return prompt
 
 def get_prompts_for_deeper(document_content: str, document_id: str, path_history_summary: Optional[str] = None) -> str:
+    """
+    Generates a prompt for an LLM to identify a core concept in a document,
+    create a new detailed document about that concept, and suggest a phrase
+    in the original document to link to the new one.
+
+    The prompt guides the LLM through a multi-step process:
+    1.  **Identify a Core Concept**: From the `document_content`.
+    2.  **Suggest a Title for the New Document**: For the concept identified.
+    3.  **Specify the Linking Phrase**: The exact text in `document_content`
+        where a link to the new document should be placed.
+    4.  **Generate Content for the New Document**: A comprehensive article
+        about the identified core concept.
+
+    If `path_history_summary` is provided, it's included to give the LLM
+    context about the user's navigation path.
+
+    The LLM is explicitly instructed to return its response as a JSON object
+    with the following keys: "core_concept", "new_doc_title",
+    "link_phrase_in_original_doc", and "new_doc_content".
+
+    :param document_content: The original text content of the document.
+    :param document_id: The identifier (e.g., title or filename) of the document.
+    :param path_history_summary: Optional string summarizing the user's navigation
+                                 path to this document.
+    :return: A string containing the formatted prompt for the LLM, expecting
+             a JSON object as its output.
+    """
     history_context_str = ""
     if path_history_summary:
         history_context_str = f"""

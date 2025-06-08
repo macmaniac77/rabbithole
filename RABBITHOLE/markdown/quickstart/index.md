@@ -4,28 +4,28 @@ Welcome to the Crabbe Automation documentation. This guide will help you navigat
 
 ## Project Overview
 
-- **Pond AI Project**  
-  Wildlife detection and monitoring using custom-trained AI models like YOLOv8 and FastSAM.  
+- **Pond AI Project**
+  Wildlife detection and monitoring using custom-trained AI models like YOLOv8 and FastSAM.
   [Explore Pond AI](ai-systems/pond-ai/index.md)
 
-- **Thorium Reactor Factory**  
-  A vision for building scalable, automated thorium molten salt reactors to solve global energy problems.  
+- **Thorium Reactor Factory**
+  A vision for building scalable, automated thorium molten salt reactors to solve global energy problems.
   [Explore Thorium Reactors](thorium-reactor/index.md)
 
-- **Museum Education Replacement**  
-  An AI-powered, project-based learning initiative aimed at transforming traditional museum education.  
+- **Museum Education Replacement**
+  An AI-powered, project-based learning initiative aimed at transforming traditional museum education.
   [Explore Education Project](education/index.md)
 
-- **Factory Automation**  
-  Enhancing American factory productivity with advanced control systems and automation technologies.  
+- **Factory Automation**
+  Enhancing American factory productivity with advanced control systems and automation technologies.
   [Explore Factory Automation](automation/project-case-studies/factory-automation.md)
 
-- **Interstellar Seed of Life**  
-  Developing infrastructure and systems to sustain life beyond Earth, creating a legacy for humanity.  
+- **Interstellar Seed of Life**
+  Developing infrastructure and systems to sustain life beyond Earth, creating a legacy for humanity.
   [Explore Interstellar Seed](interstellar-seed/index.md)
 
-- **YOLO Custom Models Optimization**  
-  Optimizing YOLO models for enhanced detection performance in various AI applications.  
+- **YOLO Custom Models Optimization**
+  Optimizing YOLO models for enhanced detection performance in various AI applications.
   [Explore YOLO Optimization](ai-systems/yolo-optimization.md)
 
 Explore each section to dive into more details on how these projects interconnect.
@@ -43,7 +43,7 @@ My name is Maclaine Crabbe Morham, an automation controls engineer driven by a r
 At the core of my existence lies a mission to balance the spiritual, intellectual, and practical layers of my life. These are the driving goals that guide me daily:
 
 - **Walk with God**: Everything begins here. My journey through faith and personal growth is the foundation of all my actions and ambitions.
-  
+
 - **Interstellar Seed of Life**: I envision a future where humanity expands beyond Earth, powered by abundant clean energy and sustainable systems. I seek to create the technological seeds that allow humanity to thrive in space and beyond.
 
 - **Thorium Reactor Factory**: Energy abundance is key to unlocking the next stage of human progress. Through the development of thorium reactors, I aim to build the foundation for clean, scalable energy that sustains civilization for generations.
@@ -67,10 +67,15 @@ Building control panels for industrial systems that optimize American manufactur
 
 ---
 
+## For Developers and Contributors
+For a deeper understanding of the project's technical architecture, backend services, database schema, and GitOps workflow, please refer to our [Technical Architecture and Developer Documentation](../documentation/README.md).
+
+---
+
 ## Core Values
 
 - **Perseverance & Simplicity**: The path to progress is found through simple, focused steps. I believe in solving one problem at a time, creating lasting value for niche audiences, and growing from there.
-  
+
 - **Energy Abundance**: The key to human flourishing is the availability of sustainable, clean energy. My work with thorium reflects my commitment to this cause.
 
 - **Automation for a Better Future**: From AI-assisted education to American factory automation, my work seeks to optimize and elevate human potential through advanced technology.
