@@ -8,23 +8,23 @@ This section highlights key AI projects and integrations, including the use of Y
 
 - **YOLO Custom Models Optimization**:  
   Techniques for fine-tuning YOLO models on custom datasets to improve accuracy, including advanced optimization strategies.  
-  [Learn About YOLO Optimization](ai-systems/yolo-optimization.md)
+  [Learn About YOLO Optimization](yolo-optimization.md)
 
 - **FastSAM Integration**:  
   Exploring the integration of Fast Segment Anything Model (FastSAM) with YOLO for enhanced object segmentation and detection.  
-  [Explore FastSAM Integration](ai-systems/fastsam-integration.md)
+  [Explore FastSAM Integration](fastsam-integration.md)
 
 - **Pond AI Project**:  
   Developing wildlife detection and tracking systems using custom-trained YOLO models integrated with FastSAM for real-time performance.  
-  [Explore Pond AI Project](ai-systems/pond-ai/index.md)
+  [Explore Pond AI Project](pond-ai/index.md)
 
 - **AI Projects**:  
   Various AI-driven projects, including camera reset automation for improved data collection and analysis.  
-  [View AI Projects](ai-systems/ai-projects/camera-reset-automation.md)
+  [View AI Projects](ai-projects/camera-reset-automation.md)
 
 - **AI Contracts**:  
   Information on AI-related contracts and collaborations for research and development in the field of artificial intelligence.  
-  [Review AI Contracts](ai-systems/contracts/ai-study-contract.md)
+  [Review AI Contracts](contracts/ai-study-contract.md)
 
 ---
 

@@ -6,27 +6,27 @@ Welcome to the Crabbe Automation documentation. This guide will help you navigat
 
 - **Pond AI Project**  
   Wildlife detection and monitoring using custom-trained AI models like YOLOv8 and FastSAM.  
-  [Explore Pond AI](ai-systems/pond-ai/index.md)
+  [Explore Pond AI](../ai-systems/pond-ai/index.md)
 
 - **Thorium Reactor Factory**  
   A vision for building scalable, automated thorium molten salt reactors to solve global energy problems.  
-  [Explore Thorium Reactors](thorium-reactor/index.md)
+  [Explore Thorium Reactors](../thorium-reactor/index.md)
 
 - **Museum Education Replacement**  
   An AI-powered, project-based learning initiative aimed at transforming traditional museum education.  
-  [Explore Education Project](education/index.md)
+  [Explore Education Project](../education/index.md)
 
 - **Factory Automation**  
   Enhancing American factory productivity with advanced control systems and automation technologies.  
-  [Explore Factory Automation](automation/project-case-studies/factory-automation.md)
+  [Explore Factory Automation](../automation/project-case-studies/factory-automation.md)
 
 - **Interstellar Seed of Life**  
   Developing infrastructure and systems to sustain life beyond Earth, creating a legacy for humanity.  
-  [Explore Interstellar Seed](interstellar-seed/index.md)
+  [Explore Interstellar Seed](../interstellar-seed/index.md)
 
 - **YOLO Custom Models Optimization**  
   Optimizing YOLO models for enhanced detection performance in various AI applications.  
-  [Explore YOLO Optimization](ai-systems/yolo-optimization.md)
+  [Explore YOLO Optimization](../ai-systems/yolo-optimization.md)
 
 Explore each section to dive into more details on how these projects interconnect.
 

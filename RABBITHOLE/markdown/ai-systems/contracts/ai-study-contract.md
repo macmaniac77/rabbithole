@@ -22,5 +22,5 @@ This section provides an overview of contracts available for AI study and implem
 ## Additional Resources
 
 For more information about AI models and their potential applications, explore our related projects and resources:
-- [YOLO Custom Models Optimization](ai-systems/yolo-optimization.md)
-- [FastSAM Integration](ai-systems/fastsam-integration.md)
+ - [YOLO Custom Models Optimization](../yolo-optimization.md)
+ - [FastSAM Integration](../fastsam-integration.md)

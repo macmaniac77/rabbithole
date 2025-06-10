@@ -8,15 +8,15 @@ The Pond AI project utilizes custom AI models to automate wildlife detection and
 
 - **Wildlife Detection**  
   This section explores how AI is being used to detect birds, mammals, and other wildlife in a pond setting. Models are trained on specific datasets to identify species in real-time.
-  [Wildlife Detection](ai-systems/pond-ai/wildlife-detection.md)
+  [Wildlife Detection](wildlife-detection.md)
 
 - **Data Optimization**  
   Optimizing the data pipeline ensures that high-quality, relevant data is used to train AI models, leading to continuous improvement in detection accuracy.  
-  [Data Optimization](ai-systems/pond-ai/data-optimization.md)
+  [Data Optimization](data-optimization.md)
 
 - **YOLO Custom Models Optimization**  
   Techniques for fine-tuning YOLO models on custom datasets to improve wildlife detection accuracy. 
-  [YOLO Custom Models Optimization](ai-systems/yolo-optimization.md)
+  [YOLO Custom Models Optimization](../yolo-optimization.md)
 
 ---
 
