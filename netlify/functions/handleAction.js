@@ -82,7 +82,8 @@ exports.handler = async function (event, context) {
             const prompt = get_prompt_for_bigger(originalContent, doc_path, JSON.stringify(document_path_history));
             const newContent = await generateContent(prompt);
 
-            await commitFile(finalFilePath, newContent, `Expand document: ${finalFilePath}`, fileSha);
+            const commitMessage = `Expand document: ${finalFilePath}`;
+            await commitFile(finalFilePath, newContent, commitMessage, fileSha);
 
             return {
                 statusCode: 200,
@@ -99,13 +100,15 @@ exports.handler = async function (event, context) {
             const new_doc_dir_path = finalFilePath.substring(0, finalFilePath.lastIndexOf('/')) + "/deeper_links";
             const new_doc_full_path = `${new_doc_dir_path}/${new_filename}`;
 
-            await commitFile(new_doc_full_path, new_doc_content, `Create deeper document: ${new_doc_full_path}`);
+            const commitMessage = `Create deeper document: ${new_doc_full_path}`;
+            await commitFile(new_doc_full_path, new_doc_content, commitMessage);
 
             if (link_phrase_in_original_doc && originalContent.includes(link_phrase_in_original_doc)) {
                 const link_to_new = `./deeper_links/${new_filename}`;
                 const updatedContent = originalContent.replace(link_phrase_in_original_doc, `${link_phrase_in_original_doc} ([${new_doc_title}](${link_to_new}))`);
 
-                await commitFile(finalFilePath, updatedContent, `Add link to deeper document: ${new_doc_full_path}`, fileSha);
+                const linkCommitMessage = `Add link to deeper document: ${new_doc_full_path}`;
+                await commitFile(finalFilePath, updatedContent, linkCommitMessage, fileSha);
             }
 
             return {

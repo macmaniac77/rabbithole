@@ -416,23 +416,16 @@
         <div class="document-container">
             <div id="document-display">Select a document to view content...</div>
             <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
-            <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
-            <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
             <div id="edit-area" style="display: none;">
                 <textarea id="edit-textarea"></textarea>
                 <button onclick="saveEdit()" class="button">Save Changes</button>
             </div>
-        </div>
-
-        <div class="generation-card">
-            <h3>Generate/Alter Document</h3>
-            <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
-            <label for="operation">Operation:</label>
-            <select id="operation">
-                <option value="alter">Alter Existing Document</option>
-                <option value="generate">Generate New Document</option>
-            </select>
-            <button onclick="generateDocument()" class="button">Execute</button>
+            <div class="generation-card" style="display: none;">
+                <h3>Generate/Alter Document</h3>
+                <textarea id="user-comment" placeholder="Enter context or instructions here..."></textarea>
+                <button id="bigger-button" class="button" onclick="handleAction('bigger')">Bigger</button>
+                <button id="deeper-button" class="button" onclick="handleAction('deeper')">Deeper</button>
+            </div>
         </div>
     </div>
     <!-- Scripts -->
@@ -453,7 +446,7 @@
 
 function loadMarkdown(docPath, event) {
     if (event) { // Prevent default only if it's a real event
-        event.preventDefault(); 
+        event.preventDefault();
         event.stopPropagation();
     }
     if (currentDocPath && currentDocPath !== docPath) {
@@ -462,33 +455,34 @@ function loadMarkdown(docPath, event) {
     currentDocPath = docPath;
 
     const display = document.getElementById('document-display');
+    const generationCard = document.querySelector('.generation-card');
     display.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
     document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
-    
-    // If the event target is a file-item, add active class. 
-    // For VP interface links, there's no direct file-item to activate in the sidebar unless it's also in the tree.
+
     if (event && event.currentTarget && event.currentTarget.classList.contains('file-item')) {
         event.currentTarget.classList.add('active');
     }
-    // If docPath is a UI interface, we might want to highlight a "virtual" item or nothing
-    // For now, just loading content.
 
     fetch(`/view_document/${docPath}`)
         .then(response => response.ok ? response.json() : Promise.reject("Document not found or not a markdown file."))
         .then(data => {
-            rawMarkdownContent = data.markdown_content;  
-            display.innerHTML = data.html_content;  
-            document.getElementById('edit-textarea').value = rawMarkdownContent;  
+            rawMarkdownContent = data.markdown_content;
+            display.innerHTML = data.html_content;
+            document.getElementById('edit-textarea').value = rawMarkdownContent;
             document.getElementById('edit-button').style.display = 'block';
-            document.getElementById('bigger-button').style.display = 'block';
-            document.getElementById('deeper-button').style.display = 'block';
+
+            // Move and show the generation card at the bottom of the content
+            display.appendChild(generationCard);
+            generationCard.style.display = 'block';
+
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
         })
         .catch(error => {
             display.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
-            document.getElementById('edit-button').style.display = 'none'; // Hide edit for non-docs
+            document.getElementById('edit-button').style.display = 'none';
+            generationCard.style.display = 'none';
         });
 }
 
@@ -533,6 +527,7 @@ function handleAction(actionType) {
         return;
     }
 
+    const userComment = document.getElementById('user-comment').value;
     const buttonId = `${actionType}-button`;
     const button = document.getElementById(buttonId);
     const originalText = button.textContent;
@@ -545,7 +540,8 @@ function handleAction(actionType) {
         body: JSON.stringify({
             doc_path: currentDocPath,
             action_type: actionType,
-            document_path_history: historyStack
+            document_path_history: historyStack,
+            user_comment: userComment
         })
     })
     .then(response => response.json().then(data => ({ok: response.ok, data})))
