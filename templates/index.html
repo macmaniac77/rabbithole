@@ -416,6 +416,8 @@
         <div class="document-container">
             <div id="document-display">Select a document to view content...</div>
             <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
+            <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
+            <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
             <div id="edit-area" style="display: none;">
                 <textarea id="edit-textarea"></textarea>
                 <button onclick="saveEdit()" class="button">Save Changes</button>
@@ -478,6 +480,8 @@ function loadMarkdown(docPath, event) {
             display.innerHTML = data.html_content;  
             document.getElementById('edit-textarea').value = rawMarkdownContent;  
             document.getElementById('edit-button').style.display = 'block';
+            document.getElementById('bigger-button').style.display = 'block';
+            document.getElementById('deeper-button').style.display = 'block';
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
@@ -522,6 +526,43 @@ function saveEdit() {
         showNotification(`An error occurred while saving: ${error.message}`, 'error');
     });
 }
+
+function handleAction(actionType) {
+    if (!currentDocPath) {
+        showNotification('Please select a document first.', 'error');
+        return;
+    }
+
+    const buttonId = `${actionType}-button`;
+    const button = document.getElementById(buttonId);
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Processing...';
+
+    fetch('/.netlify/functions/handleAction', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            doc_path: currentDocPath,
+            action_type: actionType,
+            document_path_history: historyStack
+        })
+    })
+    .then(response => response.json().then(data => ({ok: response.ok, data})))
+    .then(({ok, data}) => {
+        if (!ok) throw new Error(data.message || 'Action failed');
+        showNotification(data.message, 'success');
+        loadMarkdown(currentDocPath);
+    })
+    .catch(error => {
+        showNotification(`An error occurred: ${error.message}`, 'error');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebar');
     const content = document.getElementById('content');

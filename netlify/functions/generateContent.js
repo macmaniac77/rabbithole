@@ -1,25 +1,8 @@
 // netlify/functions/generateContent.js
 
-// Ensure you have 'google-auth-library' and '@google/generative-ai' as dependencies.
-// You'll need to add them to your project's package.json and install them.
-// For this subtask, we assume these will be available in the Netlify environment
-// by adding them to package.json in a later step or manually.
-
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
-// Get the API key from environment variables
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-if (!GEMINI_API_KEY) {
-  console.error("GEMINI_API_KEY environment variable not set.");
-  // In a real scenario, you might want to prevent the function from even deploying
-  // or have more robust error handling if the key is missing at runtime.
-}
-
-const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const { generateContent } = require('./helpers/gemini');
 
 exports.handler = async function(event, context) {
-  // Only allow POST requests
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -39,36 +22,9 @@ exports.handler = async function(event, context) {
       };
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' }); // Or your preferred model
-
-    // Generate content
-    let generatedContent = "";
-    try {
-      const contentResult = await model.generateContent(prompt_text);
-      const contentResponse = await contentResult.response;
-      generatedContent = await contentResponse.text();
-    } catch (e) {
-      console.error('Error generating content from Gemini:', e);
-      generatedContent = `Error generating content: ${e.message}`;
-      // Decide if you want to fail the whole function or return partial success
-    }
-
-    // Generate title
-    let generatedTitle = "";
-    try {
-      const titleResult = await model.generateContent(title_prompt_text);
-      const titleResponse = await titleResult.response;
-      generatedTitle = await titleResponse.text();
-    } catch (e) {
-      console.error('Error generating title from Gemini:', e);
-      generatedTitle = `Error generating title: ${e.message}`;
-      // Decide if you want to fail the whole function or return partial success
-    }
-
-    // Sanitize title (simple example, consider more robust sanitization)
-    generatedTitle = generatedTitle.replace(/[
+    const generatedContent = await generateContent(prompt_text);
+    const generatedTitle = (await generateContent(title_prompt_text)).replace(/[
 ]/g, ' ').trim();
-
 
     return {
       statusCode: 200,
