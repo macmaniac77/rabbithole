@@ -416,6 +416,7 @@
         <div class="document-container">
             <div id="document-display">Select a document to view content...</div>
             <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
+            <textarea id="user-comment" placeholder="Add a comment to guide the AI..." style="width: 100%; margin-top: 10px;"></textarea>
             <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
             <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
             <div id="edit-area" style="display: none;">
@@ -533,6 +534,7 @@ function handleAction(actionType) {
         return;
     }
 
+    const userComment = document.getElementById('user-comment').value;
     const buttonId = `${actionType}-button`;
     const button = document.getElementById(buttonId);
     const originalText = button.textContent;
@@ -545,7 +547,8 @@ function handleAction(actionType) {
         body: JSON.stringify({
             doc_path: currentDocPath,
             action_type: actionType,
-            document_path_history: historyStack
+            document_path_history: historyStack,
+            user_comment: userComment
         })
     })
     .then(response => response.json().then(data => ({ok: response.ok, data})))

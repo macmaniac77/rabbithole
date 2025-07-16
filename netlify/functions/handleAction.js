@@ -4,16 +4,17 @@ const { generateContent, generateJsonContent } = require('./helpers/gemini');
 const { sanitizeFilePath, getFileContent, commitFile } = require('./helpers/github');
 
 // Prompts from llm_strategies.py
-function get_prompt_for_bigger(content, doc_path, history_summary) {
+function get_prompt_for_bigger(content, doc_path, history_summary, user_comment) {
     return `
         **Objective:** Expand the following document to be more comprehensive.
 
         **Instructions:**
         1.  **Analyze the existing content:** Understand the core topic and key points.
-        2.  **Identify areas for expansion:** Add more details, examples, or explanations.
-        3.  **Maintain the original tone and style.**
-        4.  **Ensure the output is a complete, self-contained Markdown document.**
-        5.  **Do not add any conversational text or introductory phrases like "Here is the expanded document".**
+        2.  **Incorporate the user's comment:** ${user_comment}
+        3.  **Identify areas for expansion:** Add more details, examples, or explanations.
+        4.  **Maintain the original tone and style.**
+        5.  **Ensure the output is a complete, self-contained Markdown document.**
+        6.  **Do not add any conversational text or introductory phrases like "Here is the expanded document".**
 
         **Document Path:** ${doc_path}
         **User's navigation history:**
@@ -26,15 +27,16 @@ function get_prompt_for_bigger(content, doc_path, history_summary) {
     `;
 }
 
-function get_prompts_for_deeper(content, doc_path, history_summary) {
+function get_prompts_for_deeper(content, doc_path, history_summary, user_comment) {
     return `
         **Objective:** Create a new, more detailed document that explores a specific sub-topic from the original document.
 
         **Instructions:**
         1.  **Analyze the original content and identify a key concept or phrase that can be expanded into a new document.**
-        2.  **Generate a new document with a clear title and detailed content.**
-        3.  **The new document should be a self-contained Markdown file.**
-        4.  **Identify the exact phrase in the original document where the link to the new document should be inserted.**
+        2.  **Incorporate the user's comment:** ${user_comment}
+        3.  **Generate a new document with a clear title and detailed content.**
+        4.  **The new document should be a self-contained Markdown file.**
+        5.  **Identify the exact phrase in the original document where the link to the new document should be inserted.**
 
         **Output Format (JSON):**
         {
@@ -64,7 +66,7 @@ exports.handler = async function (event, context) {
     }
 
     try {
-        const { doc_path, action_type, document_path_history } = JSON.parse(event.body);
+        const { doc_path, action_type, document_path_history, user_comment } = JSON.parse(event.body);
 
         if (!doc_path || !action_type) {
             return {
@@ -79,7 +81,7 @@ exports.handler = async function (event, context) {
         const { content: originalContent, sha: fileSha } = await getFileContent(finalFilePath);
 
         if (action_type === 'bigger') {
-            const prompt = get_prompt_for_bigger(originalContent, doc_path, JSON.stringify(document_path_history));
+            const prompt = get_prompt_for_bigger(originalContent, doc_path, JSON.stringify(document_path_history), user_comment);
             const newContent = await generateContent(prompt);
 
             await commitFile(finalFilePath, newContent, `Expand document: ${finalFilePath}`, fileSha);
@@ -90,7 +92,7 @@ exports.handler = async function (event, context) {
                 headers: { 'Content-Type': 'application/json' },
             };
         } else if (action_type === 'deeper') {
-            const prompt = get_prompts_for_deeper(originalContent, doc_path, JSON.stringify(document_path_history));
+            const prompt = get_prompts_for_deeper(originalContent, doc_path, JSON.stringify(document_path_history), user_comment);
             const llm_data = await generateJsonContent(prompt);
 
             const { new_doc_title, new_doc_content, link_phrase_in_original_doc } = llm_data;
