@@ -37,3 +37,13 @@ This project is an evolving implementation of the Boathouse Value-Tree Engine, c
 *   More sophisticated ValuePoint spawning and UI interaction based on `ValuePoint.interface`.
 
 For a more detailed architecture overview, see `docs/ARCHITECTURE.md`.
+
+## Environment Variables
+
+Set the following variables in the Netlify dashboard (Site → Settings → Environment):
+
+- `PLAUSIBLE_DOMAIN`
+- `PLAUSIBLE_SCRIPT_URL`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `CAL_PUBLIC_LINK`
