@@ -1,8 +1,17 @@
 [build]
+  command = "npm run build:astro"
+  publish = "apps/web-astro/dist"
   functions = "netlify/functions"
 
-[context.production.environment]
-  GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
-  GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"
-  GITHUB_REPO_OWNER = "YOUR_GITHUB_REPO_OWNER"
-  GITHUB_REPO_NAME = "YOUR_GITHUB_REPO_NAME"
+[dev]
+  command = "npm run dev:astro"
+
+[[redirects]]
+  from = "/api/events"
+  to = "/.netlify/functions/events"
+  status = 200
+
+[[redirects]]
+  from = "/api/stripe/webhook"
+  to = "/.netlify/functions/stripe-webhook"
+  status = 200
