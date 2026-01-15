@@ -228,7 +228,8 @@ def index():
         return render_template('index.html', 
                              structure=get_folder_structure(BASE_DIR), 
                              user_context=serialize_user_context_for_git(user_ctx), 
-                             active_vps=list(user_ctx.active_vps_rels))
+                             active_vps=list(user_ctx.active_vps_rels),
+                             stripe_checkout_url=os.getenv("STRIPE_CHECKOUT_URL", "https://buy.stripe.com"))
     finally:
         db.close()
 
