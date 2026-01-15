@@ -490,6 +490,40 @@
             <div class="navigator-controls">
                 <button id="back-button" class="button" type="button">Back</button>
             </div>
+        <div class="document-container">
+            <div class="document-header">
+                <h1 id="document-title">Select a document to view content...</h1>
+            </div>
+            <article id="document-article">Choose a document from the sidebar to read it here.</article>
+            <div class="article-footer">
+                <a id="stripe-link" class="stripe-link" href="{{ stripe_checkout_url or 'https://buy.stripe.com' }}" target="_blank" rel="noopener noreferrer">
+                    Support this article on Stripe
+                </a>
+            </div>
+            <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
+            <textarea id="user-comment" placeholder="Add a comment to guide the AI..." style="width: 100%; margin-top: 10px;"></textarea>
+            <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
+            <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
+            <div id="edit-area" style="display: none;">
+                <textarea id="edit-textarea"></textarea>
+                <button onclick="saveEdit()" class="button">Save Changes</button>
+            </div>
+        </div>
+
+        <div class="content-tools">
+            <div class="generation-card">
+                <h3>Generate/Alter Document</h3>
+                <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
+                <label for="operation">Operation:</label>
+                <select id="operation">
+                    <option value="alter">Alter Existing Document</option>
+                    <option value="generate">Generate New Document</option>
+                </select>
+                <button onclick="generateDocument()" class="button">Execute</button>
+            </div>
+            <div class="navigator-controls">
+                <button id="back-button" class="button" type="button">Back</button>
+            </div>
         </div>
     </div>
     <!-- Scripts -->
@@ -569,6 +603,8 @@ function loadMarkdown(docPath, event) {
             articleEl.innerHTML = useNetlifyFunctions
                 ? renderMarkdown(body)
                 : renderMarkdown(body);
+            rawMarkdownContent = data.markdown_content;  
+            display.innerHTML = useNetlifyFunctions ? renderMarkdown(rawMarkdownContent) : data.html_content;  
             document.getElementById('edit-textarea').value = rawMarkdownContent;  
             document.getElementById('edit-button').style.display = 'block';
             document.getElementById('bigger-button').style.display = 'block';

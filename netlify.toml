@@ -1,6 +1,9 @@
 [build]
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_VERSION = "22"
+
 [context.production.environment]
   GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
   GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"
