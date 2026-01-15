@@ -14,17 +14,19 @@ exports.handler = async function(event, context) {
   try {
     const { prompt_text, title_prompt_text } = JSON.parse(event.body);
 
-    if (!prompt_text || !title_prompt_text) {
+    if (!prompt_text) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ error: 'Missing prompt_text or title_prompt_text in request body' }),
+        body: JSON.stringify({ error: 'Missing prompt_text in request body' }),
         headers: { 'Content-Type': 'application/json' },
       };
     }
 
     const generatedContent = await generateContent(prompt_text);
-    const generatedTitle = (await generateContent(title_prompt_text)).replace(/[
-]/g, ' ').trim();
+    let generatedTitle = null;
+    if (title_prompt_text) {
+      generatedTitle = (await generateContent(title_prompt_text)).replace(/\n/g, ' ').trim();
+    }
 
     return {
       statusCode: 200,
