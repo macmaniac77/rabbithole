@@ -418,8 +418,28 @@
 
     <!-- Main Content -->
     <div id="content">
+        <div class="document-container">
+            <div class="document-header">
+                <h1 id="document-title">Select a document to view content...</h1>
+            </div>
+            <article id="document-article">Choose a document from the sidebar to read it here.</article>
+            <div class="article-footer">
+                <a id="stripe-link" class="stripe-link" href="{{ stripe_checkout_url or 'https://buy.stripe.com' }}" target="_blank" rel="noopener noreferrer">
+                    Support this article on Stripe
+                </a>
+            </div>
+            <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
+            <textarea id="user-comment" placeholder="Add a comment to guide the AI..." style="width: 100%; margin-top: 10px;"></textarea>
+            <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
+            <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
+            <div id="edit-area" style="display: none;">
+                <textarea id="edit-textarea"></textarea>
+                <button onclick="saveEdit()" class="button">Save Changes</button>
+            </div>
+        </div>
+
         <div class="user-context-container">
-            <h2>User Context</h2>
+            <h2>Content Network</h2>
             {% if user_context %}
                 <p>User ID: {{ user_context.user_id }}</p>
                 <p>Credits USD: ${{ "%.2f"|format(user_context.credits_usd) }}</p>
@@ -455,6 +475,21 @@
             {% endif %}
         </div>
 
+        <div class="content-tools">
+            <h2>AI Content Tools</h2>
+            <div class="generation-card">
+                <h3>Generate/Alter Document</h3>
+                <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
+                <label for="operation">Operation:</label>
+                <select id="operation">
+                    <option value="alter">Alter Existing Document</option>
+                    <option value="generate">Generate New Document</option>
+                </select>
+                <button onclick="generateDocument()" class="button">Execute</button>
+            </div>
+            <div class="navigator-controls">
+                <button id="back-button" class="button" type="button">Back</button>
+            </div>
         <div class="document-container">
             <div class="document-header">
                 <h1 id="document-title">Select a document to view content...</h1>
@@ -518,6 +553,17 @@ function renderMarkdown(markdown) {
 function slugifyTitle(title) {
     const cleaned = title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_');
     return cleaned || 'generated_document';
+}
+
+function extractTitleAndBody(markdown) {
+    const lines = markdown.split(/\r?\n/);
+    const titleIndex = lines.findIndex((line) => line.startsWith('# '));
+    if (titleIndex === -1) {
+        return { title: 'Untitled document', body: markdown };
+    }
+    const title = lines[titleIndex].replace(/^#\s+/, '').trim() || 'Untitled document';
+    const bodyLines = lines.slice(0, titleIndex).concat(lines.slice(titleIndex + 1));
+    return { title, body: bodyLines.join('\n').trim() };
 }
 
 function loadMarkdown(docPath, event) {
