@@ -520,17 +520,6 @@ function slugifyTitle(title) {
     return cleaned || 'generated_document';
 }
 
-function extractTitleAndBody(markdown) {
-    const lines = markdown.split(/\r?\n/);
-    const titleIndex = lines.findIndex((line) => line.startsWith('# '));
-    if (titleIndex === -1) {
-        return { title: 'Untitled document', body: markdown };
-    }
-    const title = lines[titleIndex].replace(/^#\s+/, '').trim() || 'Untitled document';
-    const bodyLines = lines.slice(0, titleIndex).concat(lines.slice(titleIndex + 1));
-    return { title, body: bodyLines.join('\n').trim() };
-}
-
 function loadMarkdown(docPath, event) {
     if (event) { // Prevent default only if it's a real event
         event.preventDefault(); 
@@ -568,6 +557,8 @@ function loadMarkdown(docPath, event) {
             articleEl.innerHTML = useNetlifyFunctions
                 ? renderMarkdown(body)
                 : renderMarkdown(body);
+            rawMarkdownContent = data.markdown_content;  
+            display.innerHTML = useNetlifyFunctions ? renderMarkdown(rawMarkdownContent) : data.html_content;  
             document.getElementById('edit-textarea').value = rawMarkdownContent;  
             document.getElementById('edit-button').style.display = 'block';
             document.getElementById('bigger-button').style.display = 'block';
