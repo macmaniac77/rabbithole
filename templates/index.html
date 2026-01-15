@@ -302,6 +302,13 @@
         margin-bottom: 20px;
     }
 
+    #content-footer {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 30px;
+    }
+
     .navigator-controls {
         display: flex;
         justify-content: flex-end;
@@ -510,6 +517,59 @@
             </div>
         </div>
 
+        <div id="content-footer">
+            <div class="user-context-container">
+                <h2>Content Network</h2>
+                {% if user_context %}
+                    <p>User ID: {{ user_context.user_id }}</p>
+                    <p>Credits USD: ${{ "%.2f"|format(user_context.credits_usd) }}</p>
+                    <p>Credits SAT: {{ user_context.credits_sat }} sats</p>
+                    <p>Last Input: {{ user_context.last_input if user_context.last_input else 'None' }}</p>
+            
+                    <h3>Active ValuePoints</h3>
+                    {% if active_vps %}
+                        <ul>
+                        {% for vp in active_vps %}
+                            <li>
+                                <strong>{{ vp.title }}</strong> (Type: {{ vp.vp_type }})
+                                <br>
+                                {% if vp.interface %}
+                                    Interface: <a href="#" onclick="loadMarkdown('{{ vp.interface }}', event)">{{ vp.interface }}</a>
+                                {% else %}
+                                    Interface: N/A
+                                {% endif %}
+                                {% if vp.price_usd is not none %} | Price: ${{ "%.2f"|format(vp.price_usd) }} {% endif %}
+                                {% if vp.price_sat is not none %} | Price: {{ vp.price_sat }} sats {% endif %}
+                                <br>
+                                {% if vp.expires %} Expires: {{ vp.expires.strftime('%Y-%m-%d %H:%M') }} {% endif %}
+                                <br>
+                                <button class="button button-small" onclick="completeVP('{{ user_context.user_id }}', '{{ vp.id }}')">Complete VP</button>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No active ValuePoints.</p>
+                    {% endif %}
+                {% else %}
+                    <p>No user context loaded.</p>
+                {% endif %}
+            </div>
+
+            <div class="content-tools">
+                <h2>AI Content Tools</h2>
+                <div class="generation-card">
+                    <h3>Generate/Alter Document</h3>
+                    <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
+                    <label for="operation">Operation:</label>
+                    <select id="operation">
+                        <option value="alter">Alter Existing Document</option>
+                        <option value="generate">Generate New Document</option>
+                    </select>
+                    <button onclick="generateDocument()" class="button">Execute</button>
+                </div>
+                <div class="navigator-controls">
+                    <button id="back-button" class="button" type="button">Back</button>
+                </div>
         <div class="content-tools">
             <div class="generation-card">
                 <h3>Generate/Alter Document</h3>
