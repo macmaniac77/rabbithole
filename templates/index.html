@@ -445,79 +445,7 @@
             </div>
         </div>
 
-        <div class="user-context-container">
-            <h2>Content Network</h2>
-            {% if user_context %}
-                <p>User ID: {{ user_context.user_id }}</p>
-                <p>Credits USD: ${{ "%.2f"|format(user_context.credits_usd) }}</p>
-                <p>Credits SAT: {{ user_context.credits_sat }} sats</p>
-                <p>Last Input: {{ user_context.last_input if user_context.last_input else 'None' }}</p>
-        
-                <h3>Active ValuePoints</h3>
-                {% if active_vps %}
-                    <ul>
-                    {% for vp in active_vps %}
-                        <li>
-                            <strong>{{ vp.title }}</strong> (Type: {{ vp.vp_type }})
-                            <br>
-                            {% if vp.interface %}
-                                Interface: <a href="#" onclick="loadMarkdown('{{ vp.interface }}', event)">{{ vp.interface }}</a>
-                            {% else %}
-                                Interface: N/A
-                            {% endif %}
-                            {% if vp.price_usd is not none %} | Price: ${{ "%.2f"|format(vp.price_usd) }} {% endif %}
-                            {% if vp.price_sat is not none %} | Price: {{ vp.price_sat }} sats {% endif %}
-                            <br>
-                            {% if vp.expires %} Expires: {{ vp.expires.strftime('%Y-%m-%d %H:%M') }} {% endif %}
-                            <br>
-                            <button class="button button-small" onclick="completeVP('{{ user_context.user_id }}', '{{ vp.id }}')">Complete VP</button>
-                        </li>
-                    {% endfor %}
-                    </ul>
-                {% else %}
-                    <p>No active ValuePoints.</p>
-                {% endif %}
-            {% else %}
-                <p>No user context loaded.</p>
-            {% endif %}
-        </div>
-
-        <div class="content-tools">
-            <h2>AI Content Tools</h2>
-            <div class="generation-card">
-                <h3>Generate/Alter Document</h3>
-                <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
-                <label for="operation">Operation:</label>
-                <select id="operation">
-                    <option value="alter">Alter Existing Document</option>
-                    <option value="generate">Generate New Document</option>
-                </select>
-                <button onclick="generateDocument()" class="button">Execute</button>
-            </div>
-            <div class="navigator-controls">
-                <button id="back-button" class="button" type="button">Back</button>
-            </div>
-        <div class="document-container">
-            <div class="document-header">
-                <h1 id="document-title">Select a document to view content...</h1>
-            </div>
-            <article id="document-article">Choose a document from the sidebar to read it here.</article>
-            <div class="article-footer">
-                <a id="stripe-link" class="stripe-link" href="{{ stripe_checkout_url or 'https://buy.stripe.com' }}" target="_blank" rel="noopener noreferrer">
-                    Support this article on Stripe
-                </a>
-            </div>
-            <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
-            <textarea id="user-comment" placeholder="Add a comment to guide the AI..." style="width: 100%; margin-top: 10px;"></textarea>
-            <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
-            <button id="deeper-button" class="button" style="display: none;" onclick="handleAction('deeper')">Deeper</button>
-            <div id="edit-area" style="display: none;">
-                <textarea id="edit-textarea"></textarea>
-                <button onclick="saveEdit()" class="button">Save Changes</button>
-            </div>
-        </div>
-
-        <div id="content-footer">
+        <div id="editor-tools" style="display: none;">
             <div class="user-context-container">
                 <h2>Content Network</h2>
                 {% if user_context %}
@@ -570,19 +498,6 @@
                 <div class="navigator-controls">
                     <button id="back-button" class="button" type="button">Back</button>
                 </div>
-        <div class="content-tools">
-            <div class="generation-card">
-                <h3>Generate/Alter Document</h3>
-                <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
-                <label for="operation">Operation:</label>
-                <select id="operation">
-                    <option value="alter">Alter Existing Document</option>
-                    <option value="generate">Generate New Document</option>
-                </select>
-                <button onclick="generateDocument()" class="button">Execute</button>
-            </div>
-            <div class="navigator-controls">
-                <button id="back-button" class="button" type="button">Back</button>
             </div>
         </div>
     </div>
@@ -669,6 +584,7 @@ function loadMarkdown(docPath, event) {
             document.getElementById('edit-button').style.display = 'block';
             document.getElementById('bigger-button').style.display = 'block';
             document.getElementById('deeper-button').style.display = 'block';
+            toggleEditorTools(false);
             document.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
@@ -677,7 +593,16 @@ function loadMarkdown(docPath, event) {
             titleEl.textContent = 'Document unavailable';
             articleEl.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
             document.getElementById('edit-button').style.display = 'none'; // Hide edit for non-docs
+            toggleEditorTools(false);
         });
+}
+
+function toggleEditorTools(showTools) {
+    const editorTools = document.getElementById('editor-tools');
+    if (!editorTools) {
+        return;
+    }
+    editorTools.style.display = showTools ? 'block' : 'none';
 }
 
 function enableEdit() {
@@ -685,6 +610,7 @@ function enableEdit() {
     document.getElementById('document-article').style.display = 'none';
     document.getElementById('edit-textarea').value = rawMarkdownContent;
     document.getElementById('edit-textarea').focus();
+    toggleEditorTools(true);
 }
 
 function saveEdit() {
@@ -721,6 +647,7 @@ function saveEdit() {
         loadMarkdown(currentDocPath); 
         document.getElementById('edit-area').style.display = 'none';
         document.getElementById('document-article').style.display = 'block';
+        toggleEditorTools(false);
         showNotification(data.message, 'success');
     })
     .catch(error => {
