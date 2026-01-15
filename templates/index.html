@@ -190,17 +190,17 @@
     }
 
     /* Link Styles */
-    #document-display a, .user-context-container a { /* Apply to user context links too */
+    #document-article a, .user-context-container a { /* Apply to user context links too */
         color: var(--link-color);
         text-decoration: underline;
         transition: color var(--transition-speed);
     }
 
-    #document-display a:visited, .user-context-container a:visited {
+    #document-article a:visited, .user-context-container a:visited {
         color: var(--link-visited-color);
     }
 
-    #document-display a:hover, .user-context-container a:hover {
+    #document-article a:hover, .user-context-container a:hover {
         color: var(--link-hover-color);
     }
 
@@ -260,6 +260,53 @@
         color: var(--accent);
         margin-bottom: 15px;
     }
+
+    .document-header {
+        margin-bottom: 15px;
+    }
+
+    #document-title {
+        margin: 0 0 10px;
+        font-size: 2rem;
+        color: var(--accent);
+    }
+
+    #document-article {
+        line-height: 1.6;
+        font-size: 1.1rem;
+    }
+
+    .article-footer {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid var(--bg-tertiary);
+    }
+
+    .stripe-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background-color: var(--accent);
+        color: var(--bg-primary);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .content-tools {
+        background-color: var(--bg-secondary);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .navigator-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 15px;
+    }
 	.file-item.active {
 		background-color: var(--hover-bg);
 		border-radius: 4px;
@@ -300,32 +347,27 @@
         border-color: var(--accent);
     }
 
-    #document-display {
-        line-height: 1.6;
-        font-size: 1.1rem;
-    }
-
-	#document-display h1, #document-display h2, #document-display h3 {
+	#document-article h1, #document-article h2, #document-article h3 {
 		font-size: 1.5em; 
 		font-weight: bold;
 		color: var(--accent);
 	}
 
-	#document-display ul, #document-display ol {
+	#document-article ul, #document-article ol {
 		padding-left: 20px; 
 		margin-bottom: 1em;
 	}
 
-	#document-display li {
+	#document-article li {
 		line-height: 1.5;
 		font-size: 1.1rem; 
 	}
 
-    #document-display p {
+    #document-article p {
         margin-bottom: 1em;
     }
 
-    #document-display code {
+    #document-article code {
         background-color: var(--bg-tertiary);
         padding: 2px 6px;
         border-radius: 4px;
@@ -414,7 +456,15 @@
         </div>
 
         <div class="document-container">
-            <div id="document-display">Select a document to view content...</div>
+            <div class="document-header">
+                <h1 id="document-title">Select a document to view content...</h1>
+            </div>
+            <article id="document-article">Choose a document from the sidebar to read it here.</article>
+            <div class="article-footer">
+                <a id="stripe-link" class="stripe-link" href="{{ stripe_checkout_url or 'https://buy.stripe.com' }}" target="_blank" rel="noopener noreferrer">
+                    Support this article on Stripe
+                </a>
+            </div>
             <button id="edit-button" class="button" style="display: none;" onclick="enableEdit()">Edit Document</button>
             <textarea id="user-comment" placeholder="Add a comment to guide the AI..." style="width: 100%; margin-top: 10px;"></textarea>
             <button id="bigger-button" class="button" style="display: none;" onclick="handleAction('bigger')">Bigger</button>
@@ -425,15 +475,20 @@
             </div>
         </div>
 
-        <div class="generation-card">
-            <h3>Generate/Alter Document</h3>
-            <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
-            <label for="operation">Operation:</label>
-            <select id="operation">
-                <option value="alter">Alter Existing Document</option>
-                <option value="generate">Generate New Document</option>
-            </select>
-            <button onclick="generateDocument()" class="button">Execute</button>
+        <div class="content-tools">
+            <div class="generation-card">
+                <h3>Generate/Alter Document</h3>
+                <textarea id="context-text" placeholder="Enter context or instructions here..."></textarea>
+                <label for="operation">Operation:</label>
+                <select id="operation">
+                    <option value="alter">Alter Existing Document</option>
+                    <option value="generate">Generate New Document</option>
+                </select>
+                <button onclick="generateDocument()" class="button">Execute</button>
+            </div>
+            <div class="navigator-controls">
+                <button id="back-button" class="button" type="button">Back</button>
+            </div>
         </div>
     </div>
     <!-- Scripts -->
@@ -475,8 +530,10 @@ function loadMarkdown(docPath, event) {
     }
     currentDocPath = docPath;
 
-    const display = document.getElementById('document-display');
-    display.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
+    const titleEl = document.getElementById('document-title');
+    const articleEl = document.getElementById('document-article');
+    titleEl.textContent = 'Loading...';
+    articleEl.innerHTML = '<div style="text-align: center; padding: 20px;">Loading...</div>';
     document.querySelectorAll('.file-item').forEach(item => item.classList.remove('active'));
     
     // If the event target is a file-item, add active class. 
@@ -494,6 +551,12 @@ function loadMarkdown(docPath, event) {
     fetch(fetchUrl)
         .then(response => response.ok ? response.json() : Promise.reject("Document not found or not a markdown file."))
         .then(data => {
+            rawMarkdownContent = data.markdown_content;
+            const { title, body } = extractTitleAndBody(rawMarkdownContent);
+            titleEl.textContent = title;
+            articleEl.innerHTML = useNetlifyFunctions
+                ? renderMarkdown(body)
+                : renderMarkdown(body);
             rawMarkdownContent = data.markdown_content;  
             display.innerHTML = useNetlifyFunctions ? renderMarkdown(rawMarkdownContent) : data.html_content;  
             document.getElementById('edit-textarea').value = rawMarkdownContent;  
@@ -505,14 +568,15 @@ function loadMarkdown(docPath, event) {
             });
         })
         .catch(error => {
-            display.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
+            titleEl.textContent = 'Document unavailable';
+            articleEl.innerHTML = `<p style="color: #ff5f5f;">${error}</p>`;
             document.getElementById('edit-button').style.display = 'none'; // Hide edit for non-docs
         });
 }
 
 function enableEdit() {
     document.getElementById('edit-area').style.display = 'block';
-    document.getElementById('document-display').style.display = 'none';
+    document.getElementById('document-article').style.display = 'none';
     document.getElementById('edit-textarea').value = rawMarkdownContent;
     document.getElementById('edit-textarea').focus();
 }
@@ -550,7 +614,7 @@ function saveEdit() {
         rawMarkdownContent = newContent;  
         loadMarkdown(currentDocPath); 
         document.getElementById('edit-area').style.display = 'none';
-        document.getElementById('document-display').style.display = 'block';
+        document.getElementById('document-article').style.display = 'block';
         showNotification(data.message, 'success');
     })
     .catch(error => {
@@ -728,13 +792,11 @@ function goBack() {
 window.addEventListener("popstate", (event) => { goBack(); });
 
 document.addEventListener("DOMContentLoaded", () => {
-    const backButton = document.createElement("button");
-    backButton.textContent = "Back"; backButton.classList.add("button");
-    backButton.style.marginBottom = "10px"; backButton.onclick = goBack;
-    const contentDiv = document.getElementById('content');
-    if (contentDiv.firstChild) { contentDiv.insertBefore(backButton, contentDiv.firstChild.nextSibling); } 
-    else { contentDiv.appendChild(backButton); }
-    
+    const backButton = document.getElementById('back-button');
+    if (backButton) {
+        backButton.addEventListener('click', goBack);
+    }
+
     // Automatically load 'quickstart/index.md' or a default page
     // Check if a specific document is requested via URL hash, e.g. #quickstart/index.md
     const initialDocPath = window.location.hash ? window.location.hash.substring(1) : 'quickstart/index.md';
@@ -754,7 +816,7 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-document.getElementById('document-display').addEventListener('click', function(event) {
+document.getElementById('document-article').addEventListener('click', function(event) {
     const target = event.target;
     if (target.tagName === 'A') {
         const href = target.getAttribute('href');
