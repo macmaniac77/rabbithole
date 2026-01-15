@@ -451,6 +451,19 @@
     let currentDocPath = null;
     let rawMarkdownContent = "";  
     let historyStack = [];        
+    const netlifyFunctionBase = (window.location.hostname.includes('netlify.app') || window.location.hostname.includes('netlify'))
+        ? '/.netlify/functions'
+        : '';
+    const useNetlifyFunctions = netlifyFunctionBase !== '';
+
+function renderMarkdown(markdown) {
+    return marked.parse(markdown);
+}
+
+function slugifyTitle(title) {
+    const cleaned = title.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_');
+    return cleaned || 'generated_document';
+}
 
 function loadMarkdown(docPath, event) {
     if (event) { // Prevent default only if it's a real event
@@ -474,11 +487,15 @@ function loadMarkdown(docPath, event) {
     // If docPath is a UI interface, we might want to highlight a "virtual" item or nothing
     // For now, just loading content.
 
-    fetch(`/view_document/${docPath}`)
+    const fetchUrl = useNetlifyFunctions
+        ? `${netlifyFunctionBase}/viewDocument?path=${encodeURIComponent(docPath)}`
+        : `/view_document/${docPath}`;
+
+    fetch(fetchUrl)
         .then(response => response.ok ? response.json() : Promise.reject("Document not found or not a markdown file."))
         .then(data => {
             rawMarkdownContent = data.markdown_content;  
-            display.innerHTML = data.html_content;  
+            display.innerHTML = useNetlifyFunctions ? renderMarkdown(rawMarkdownContent) : data.html_content;  
             document.getElementById('edit-textarea').value = rawMarkdownContent;  
             document.getElementById('edit-button').style.display = 'block';
             document.getElementById('bigger-button').style.display = 'block';
@@ -509,10 +526,23 @@ function saveEdit() {
         return;
     }
 
-    fetch('/edit_document', {
+    const requestUrl = useNetlifyFunctions ? `${netlifyFunctionBase}/commitFileToGitHub` : '/edit_document';
+    const requestBody = useNetlifyFunctions
+        ? {
+            filePath: currentDocPath,
+            content: newContent,
+            commitMessage: `Update document: ${currentDocPath}`,
+            isUpdate: true,
+        }
+        : { doc_path: currentDocPath, content: newContent, user_id: currentUserId };
+    const requestHeaders = useNetlifyFunctions
+        ? { 'Content-Type': 'application/json' }
+        : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` };
+
+    fetch(requestUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` },
-        body: JSON.stringify({ doc_path: currentDocPath, content: newContent, user_id: currentUserId }) // user_id might be redundant if taken from JWT
+        headers: requestHeaders,
+        body: JSON.stringify(requestBody)
     })
     .then(response => response.json().then(data => ({ok: response.ok, data})))
     .then(({ok, data}) => {
@@ -588,6 +618,81 @@ function generateDocument() {
     const button = event.target;
     const originalText = button.textContent;
     button.disabled = true; button.textContent = 'Processing...';
+
+    if (useNetlifyFunctions) {
+        if (!contextText) {
+            showNotification('Please provide context or instructions.', 'error');
+            button.disabled = false; button.textContent = originalText;
+            return;
+        }
+        const baseDir = currentDocPath && currentDocPath.includes('/')
+            ? currentDocPath.split('/').slice(0, -1).join('/')
+            : '';
+        const promptText = operation === 'alter' && rawMarkdownContent
+            ? `Alter content:\\n\\n${rawMarkdownContent}\\n\\nInstructions:\\n${contextText}`
+            : `Generate new document from context:\\n\\n${contextText}`;
+        const titlePromptText = operation === 'generate'
+            ? `Create a concise, filename-friendly title (max 5 words, no special characters other than underscore) for the following text:\\n\\n${contextText}`
+            : null;
+
+        fetch(`${netlifyFunctionBase}/generateContent`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt_text: promptText, title_prompt_text: titlePromptText })
+        })
+        .then(response => response.json().then(data => ({ok: response.ok, data})))
+        .then(({ok, data}) => {
+            if (!ok) throw new Error(data.message || 'Generation failed');
+            const generatedContent = data.content;
+            if (!generatedContent) throw new Error('No content returned from generation.');
+
+            if (operation === 'alter') {
+                return fetch(`${netlifyFunctionBase}/commitFileToGitHub`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: currentDocPath,
+                        content: generatedContent,
+                        commitMessage: `Alter document: ${currentDocPath}`,
+                        isUpdate: true,
+                    })
+                });
+            }
+
+            const generatedTitle = data.title || 'generated_document';
+            const safeTitle = slugifyTitle(generatedTitle);
+            const newFilePath = baseDir ? `${baseDir}/${safeTitle}` : safeTitle;
+            return fetch(`${netlifyFunctionBase}/commitFileToGitHub`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filePath: newFilePath,
+                    content: generatedContent,
+                    commitMessage: `Generate document: ${newFilePath}`,
+                    isUpdate: false,
+                })
+            }).then(() => ({ newDocPath: `${newFilePath}.md` }));
+        })
+        .then((commitResponse) => {
+            if (commitResponse && commitResponse.json) {
+                return commitResponse.json().then(data => ({ok: commitResponse.ok, data}));
+            }
+            return { ok: true, data: { doc_path: commitResponse?.newDocPath } };
+        })
+        .then(({ok, data}) => {
+            if (!ok) throw new Error(data.message || 'Commit failed');
+            showNotification('Document processed successfully.', 'success');
+            if (operation === 'generate') {
+                location.reload();
+            } else if (currentDocPath) {
+                loadMarkdown(currentDocPath);
+            }
+            document.getElementById('context-text').value = '';
+        })
+        .catch(error => { showNotification(`An error occurred during generation: ${error.message}`, 'error'); })
+        .finally(() => { button.disabled = false; button.textContent = originalText; });
+        return;
+    }
 
     fetch('/generate_document', {
         method: 'POST',
