@@ -2,290 +2,318 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Maclaine's Automation Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maclaine's Rabbit Hole</title>
     <style>
-        /* General Styles */
+        :root {
+            --bg: #0f1117;
+            --card: #161a24;
+            --accent: #7aa2f7;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+        }
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace;
-            background-color: black;
-            color: #00ff00;
-            overflow: hidden;
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
         }
-
-        /* Matrix Background Animation */
-        canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
-
-        /* Header Styles */
         header {
             text-align: center;
-            padding: 50px 0;
+            margin-bottom: 60px;
         }
-        header h1 {
-            font-size: 3em;
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 700;
+            margin: 0 0 12px;
+            background: linear-gradient(90deg, #7aa2f7, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-dim);
             margin: 0;
-            text-shadow: 0 0 10px #00ff00;
         }
-        header p {
-            font-size: 1.5em;
-            margin: 10px 0 0;
-            text-shadow: 0 0 5px #00ff00;
-        }
-        nav a {
-            color: #00ff00;
-            text-decoration: none;
-            font-size: 1.2em;
-            display: inline-block;
-            margin-top: 20px;
-            border: 1px solid #00ff00;
-            padding: 10px 20px;
-            transition: background-color 0.3s;
-        }
-        nav a:hover {
-            background-color: #00ff00;
-            color: black;
-        }
-
-        /* Container and Section Styles */
-        .container {
-            padding: 20px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: flex-start;
-        }
-        .section {
-            background-color: rgba(0, 0, 0, 0.8);
-            border: 1px solid #00ff00;
-            margin: 10px;
-            padding: 20px;
-            width: 280px;
-            box-sizing: border-box;
-            border-radius: 8px;
-            box-shadow: 0 0 10px #00ff00;
-            transition: transform 0.3s;
-        }
-        .section:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 20px #00ff00;
-        }
-        .section h2 {
-            margin-top: 0;
-            text-align: center;
-            text-shadow: 0 0 5px #00ff00;
-        }
-        .section ul {
-            list-style: none;
-            padding: 0;
-        }
-        .section ul li {
-            margin: 10px 0;
-            text-align: center;
-        }
-        .section ul li a {
-            color: #00ff00;
-            text-decoration: none;
-            font-size: 1.1em;
-            transition: color 0.3s;
-        }
-        .section ul li a:hover {
-            color: white;
-        }
-
-        /* Footer Styles */
-        footer {
-            text-align: center;
-            padding: 20px 0;
-            background-color: black;
-            color: #00ff00;
+        .search-bar {
+            max-width: 600px;
+            margin: 40px auto;
             position: relative;
         }
-
-        /* Scrollbar Styles */
-        ::-webkit-scrollbar {
-            width: 10px;
+        .search-bar input {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 1.1rem;
+            border: 2px solid #30363d;
+            border-radius: 9999px;
+            background: var(--card);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
         }
-        ::-webkit-scrollbar-track {
-            background: black;
+        .search-bar input:focus {
+            border-color: var(--accent);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #00ff00;
+        .search-bar::after {
+            content: '⌘K';
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            opacity: 0.6;
+        }
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 60px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            background: var(--accent);
+            color: #0f1117;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(122 162 247 / 0.3);
+        }
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid #30363d;
+        }
+        .section {
+            margin-bottom: 70px;
+        }
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            color: var(--text);
+            font-weight: 600;
+        }
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+        .card h3 {
+            margin: 0 0 12px;
+            font-size: 1.25rem;
+        }
+        .card p {
+            color: var(--text-dim);
+            margin: 0;
+            font-size: 0.95rem;
+        }
+        .new-thought {
+            background: var(--card);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .new-thought textarea {
+            width: 100%;
+            min-height: 120px;
+            background: #0f1117;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            color: var(--text);
+            padding: 16px;
+            font-size: 1rem;
+            resize: vertical;
+            margin-bottom: 16px;
+        }
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
+    <div class="container">
+        <header>
+            <h1>Maclaine's Rabbit Hole</h1>
+            <p class="subtitle">Your living knowledge base — grown with AI</p>
+        </header>
 
-<!-- Matrix Background Canvas -->
-<canvas id="matrix"></canvas>
+        <!-- Search -->
+        <div class="search-bar">
+            <input type="text" id="global-search" placeholder="Search your rabbit hole..." 
+                   onkeypress="if (event.key === 'Enter') searchWiki(this.value)">
+        </div>
 
-<header>
-    <h1>Maclaine's Automation Hub</h1>
-    <p>Dive into the world of automation and future-focused projects</p>
-    <nav>
-        <a href="/rabbithole/index.html#quickstart/index.md">Explore the Full Documentation</a>
-    </nav>
-</header>
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="/RABBITHOLE/index.html" class="btn">Enter the Wiki</a>
+            <button onclick="showNewThought()" class="btn btn-secondary">+ New Thought</button>
+        </div>
 
-<div class="container">
-    <!-- Sections -->
-    <div class="section">
-        <h2>Vending Business</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#vending/index.md">Quickstart</a></li>
-            <li><a href="/rabbithole/index.html#vending/contract.md">Contract</a></li>
-            <li><a href="/rabbithole/index.html#vending/maintenance.md">Maintenance</a></li>
-            <li><a href="/rabbithole/index.html#vending/future-plans.md">Future Plans</a></li>
-        </ul>
+        <!-- New Thought Modal -->
+        <div id="new-thought-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;">
+            <div class="new-thought" style="max-width: 600px; width: 90%;">
+                <h2 style="margin-top: 0;">Start a new thought</h2>
+                <textarea id="thought-prompt" placeholder="Describe the idea, question, or project..."></textarea>
+                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                    <button onclick="hideNewThought()" class="btn btn-secondary">Cancel</button>
+                    <button onclick="generateNewPage()" class="btn">Generate with AI →</button>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 12px;">
+                    This will create a new Markdown page and commit it to your repo.
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Access Cards -->
+        <div class="section">
+            <h2>Jump into a theme</h2>
+            <div class="cards">
+                <a href="/RABBITHOLE/index.html#markdown/vending/index.md" class="card">
+                    <h3>🚀 Vending Business</h3>
+                    <p>Contracts, maintenance, future plans</p>
+                </a>
+                <a href="/RABBITHOLE/index.html#markdown/thorium-reactor/index.md" class="card">
+                    <h3>⚛️ Thorium Reactor</h3>
+                    <p>Prototype design, investment, energy abundance</p>
+                </a>
+                <a href="/RABBITHOLE/index.html#markdown/ai-systems/index.md" class="card">
+                    <h3>🤖 AI Systems</h3>
+                    <p>YOLO, FastSAM, Pond AI, local models</p>
+                </a>
+                <a href="/RABBITHOLE/index.html#markdown/automation/index.md" class="card">
+                    <h3>🛠 Automation Engineering</h3>
+                    <p>Control panels, case studies, future roadmap</p>
+                </a>
+                <a href="/RABBITHOLE/index.html#markdown/education/index.md" class="card">
+                    <h3>📚 Education Reform</h3>
+                    <p>Interactive learning, AI task systems</p>
+                </a>
+                <a href="/RABBITHOLE/index.html#markdown/future-projects/index.md" class="card">
+                    <h3>🌌 Future Projects</h3>
+                    <p>Robotics, advanced nuclear, global energy</p>
+                </a>
+            </div>
+        </div>
+
+        <footer>
+            Built with intention • Powered by AI • Hosted on Netlify<br>
+            <small>Last updated: May 2026</small>
+        </footer>
     </div>
 
-    <div class="section">
-        <h2>Automation Engineering</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#automation/control-panels.md">Control Panels</a></li>
-            <li><a href="/rabbithole/index.html#automation/ai-integration.md">AI Integration</a></li>
-            <li><a href="/rabbithole/index.html#automation/project-case-studies/index.md">Project Case Studies</a></li>
-            <li><a href="/rabbithole/index.html#automation/project-case-studies/factory-automation.md">Factory Automation</a></li>
-            <li><a href="/rabbithole/index.html#automation/fiber-pulling-system.md">Fiber Pulling System</a></li>
-            <li><a href="/rabbithole/index.html#automation/xyz-positioning.md">XYZ Positioning</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Thorium Reactor Factory</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#thorium-reactor/prototype-design.md">Prototype Design</a></li>
-            <li><a href="/rabbithole/index.html#thorium-reactor/investment.md">Investment</a></li>
-            <li><a href="/rabbithole/index.html#thorium-reactor/energy-hyperabundance.md">Energy Hyperabundance</a></li>
-            <li><a href="/rabbithole/index.html#thorium-reactor/project-plans/index.md">Project Plans</a></li>
-            <li><a href="/rabbithole/index.html#thorium-reactor/project-plans/infrastructure.md">Infrastructure</a></li>
-            <li><a href="/rabbithole/index.html#thorium-reactor/project-plans/regulatory-compliance.md">Regulatory Compliance</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Education Reform</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#education/interactive-learning.md">Interactive Learning</a></li>
-            <li><a href="/rabbithole/index.html#education/generational-values.md">Generational Values</a></li>
-            <li><a href="/rabbithole/index.html#education/project-based-learning.md">Project-Based Learning</a></li>
-            <li><a href="/rabbithole/index.html#education/omnivision-projector.md">Omnivision Projector</a></li>
-            <li><a href="/rabbithole/index.html#education/ai-task-system.md">AI Task System</a></li>
-            <li><a href="/rabbithole/index.html#education/future-roadmap.md">Future Roadmap</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Interstellar Seed of Life</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#interstellar-seed/space-habitats.md">Space Habitats</a></li>
-            <li><a href="/rabbithole/index.html#interstellar-seed/bioproduction.md">Bioproduction</a></li>
-            <li><a href="/rabbithole/index.html#interstellar-seed/space-infrastructure.md">Space Infrastructure</a></li>
-            <li><a href="/rabbithole/index.html#interstellar-seed/research.md">Research</a></li>
-            <li><a href="/rabbithole/index.html#interstellar-seed/energy-abundance.md">Energy Abundance</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Bitcoin DAO</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#bitcoin-dao/dao-governance.md">DAO Governance</a></li>
-            <li><a href="/rabbithole/index.html#bitcoin-dao/orders-of-magnitude.md">Orders of Magnitude</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>AI Systems</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#ai-systems/yolo-optimization.md">YOLO Optimization</a></li>
-            <li><a href="/rabbithole/index.html#ai-systems/fastsam-integration.md">FastSAM Integration</a></li>
-            <li><a href="/rabbithole/index.html#ai-systems/pond-ai/index.md">Pond AI</a></li>
-            <li><a href="/rabbithole/index.html#ai-systems/pond-ai/wildlife-detection.md">Wildlife Detection</a></li>
-            <li><a href="/rabbithole/index.html#ai-systems/pond-ai/data-optimization.md">Data Optimization</a></li>
-        </ul>
-    </div>
-
-    <div class="section">
-        <h2>Legacy and Values</h2>
-        <ul>
-            <li><a href="/rabbithole/index.html#legacy-and-values/personal-mission.md">Personal Mission</a></li>
-            <li><a href="/rabbithole/index.html#legacy-and-values/generational-lessons.md">Generational Lessons</a></li>
-            <li><a href="/rabbithole/index.html#legacy-and-values/faith-and-leadership.md">Faith and Leadership</a></li>
-            <li><a href="/rabbithole/index.html#future-projects/index.md">Future Projects</a></li>
-        </ul>
-    </div>
-</div>
-
-<footer>
-    <p>&copy; 2024 Maclaine Crabbe Morham. All rights reserved.</p>
-</footer>
-
-<!-- Matrix Background Script -->
-<script>
-    var c = document.getElementById("matrix");
-    var ctx = c.getContext("2d");
-
-    // Make the canvas full screen
-    c.height = window.innerHeight;
-    c.width = window.innerWidth;
-
-    // Characters - taken from the unicode charset
-    var matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%";
-    // Convert the string into an array of single characters
-    matrix = matrix.split("");
-
-    var font_size = 16;
-    var columns = c.width / font_size; // number of columns for the rain
-    // an array of drops - one per column
-    var drops = [];
-    // x below is the x coordinate
-    // 1 = y-coordinate of the drop(same for every drop initially)
-    for (var x = 0; x < columns; x++)
-        drops[x] = 1;
-
-    // Drawing the characters
-    function draw() {
-        // Black BG for the canvas
-        // Translucent BG to show trail effect
-        ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
-        ctx.fillRect(0, 0, c.width, c.height);
-
-        ctx.fillStyle = "#00ff00"; // Green text
-        ctx.font = font_size + "px Courier New";
-        // Looping over drops
-        for (var i = 0; i < drops.length; i++) {
-            // A random character to print
-            var text = matrix[Math.floor(Math.random() * matrix.length)];
-            // x = i * font_size, y = value of drops[i] * font_size
-            ctx.fillText(text, i * font_size, drops[i] * font_size);
-
-            // Sending the drop back to the top randomly after it has crossed the screen
-            // Adding a randomness to the reset to make the drops scattered on the Y axis
-            if (drops[i] * font_size > c.height && Math.random() > 0.975)
-                drops[i] = 0;
-
-            // Incrementing Y coordinate
-            drops[i]++;
+    <script>
+        function searchWiki(query) {
+            if (!query.trim()) return;
+            window.location.href = `/RABBITHOLE/index.html?search=${encodeURIComponent(query)}`;
         }
-    }
 
-    setInterval(draw, 35);
+        function showNewThought() {
+            document.getElementById('new-thought-modal').style.display = 'flex';
+            document.getElementById('thought-prompt').focus();
+        }
 
-    // Adjust canvas size on window resize
-    window.onresize = function() {
-        c.height = window.innerHeight;
-        c.width = window.innerWidth;
-        columns = c.width / font_size;
-        drops = [];
-        for (var x = 0; x < columns; x++)
-            drops[x] = 1;
-    };
-</script>
+        function hideNewThought() {
+            document.getElementById('new-thought-modal').style.display = 'none';
+        }
 
+        async function generateNewPage() {
+            const prompt = document.getElementById('thought-prompt').value.trim();
+            if (!prompt) {
+                alert('Please describe your thought');
+                return;
+            }
+
+            const btns = document.querySelectorAll('#new-thought-modal button');
+            btns.forEach(b => b.disabled = true);
+
+            try {
+                const res = await fetch('/.netlify/functions/generateContent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        prompt_text: prompt,
+                        title_prompt_text: 'A clear, compelling title for this idea'
+                    })
+                });
+
+                if (!res.ok) throw new Error('Generation failed');
+                const data = await res.json();
+
+                const fileName = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.md';
+                const filePath = 'markdown/quickstart/' + fileName;
+
+                const commitRes = await fetch('/.netlify/functions/commitFileToGitHub', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: filePath,
+                        content: data.content,
+                        commitMessage: `Add new thought: ${data.title}`,
+                        isUpdate: false
+                    })
+                });
+
+                if (!commitRes.ok) throw new Error('Commit failed');
+
+                alert('New page created! Redirecting to the wiki...');
+                window.location.href = `/RABBITHOLE/index.html#${filePath}`;
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btns.forEach(b => b.disabled = false);
+                hideNewThought();
+            }
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', function(e) {
+            if (e.metaKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('global-search').focus();
+            }
+        });
+
+        // Auto-focus search on load
+        setTimeout(() => {
+            const search = document.getElementById('global-search');
+            if (search) search.placeholder = 'Search your rabbit hole... (⌘K)';
+        }, 800);
+    </script>
 </body>
 </html>
