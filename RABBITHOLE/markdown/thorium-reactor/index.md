@@ -1,14 +1,28 @@
 # Thorium Reactor Factory
 
-The Thorium Reactor Factory project is focused on creating energy hyperabundance through scalable, safe, and efficient thorium molten salt reactors (TMSRs).
+Notes on **energy hyperabundance** via scalable, safe thorium molten salt reactors (TMSRs) — design sketches, education, and public demos.
 
-## Sections:
-- [Prototype Design](thorium-reactor/prototype-design.md)
-- [Investment Opportunities](thorium-reactor/investment.md)
-- [Energy Hyperabundance](thorium-reactor/energy-hyperabundance.md)
-- [Factory Infrastructure](thorium-reactor/project-plans/infrastructure.md)
-- [Regulatory Compliance](thorium-reactor/project-plans/regulatory-compliance.md)
-- [Vertical Farming Integration](thorium-reactor/vertical-farming.md)
-- [Research and Whitepapers](thorium-reactor/research.md)
-- [Thorium Documentary](thorium-reactor/thorium-documentary.md)
+## Live demo
 
+**Fantastic Fission Future** is the public educational plant console:  
+→ [https://fissionfuture.netlify.app/](https://fissionfuture.netlify.app/)
+
+Use it to explore plant-style systems thinking. This wiki holds the deeper notes.
+
+## Sections
+
+- [Prototype Design](./prototype-design.md)
+- [Investment Opportunities](./investment.md)
+- [Energy Hyperabundance](./energy-hyperabundance.md)
+- [Factory Infrastructure](./project-plans/infrastructure.md)
+- [Regulatory Compliance](./project-plans/regulatory-compliance.md)
+- [Vertical Farming Integration](./vertical-farming.md)
+- [Research and Whitepapers](./research.md)
+- [Thorium Documentary](./thorium-documentary.md)
+- [Thorium Reactor overview essay](./thorium-reactor.md)
+
+## Related public surfaces
+
+- Writing: [maclaine.substack.com](https://maclaine.substack.com/)
+- Public home: [maclaine.ai](https://maclaine.ai/)
+- Wiki hub: [rabbitholedocs.netlify.app](https://rabbitholedocs.netlify.app/)

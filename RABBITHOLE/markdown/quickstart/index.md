@@ -1,96 +1,76 @@
 # Quickstart Guide
 
-Welcome to the Crabbe Automation documentation. This guide will help you navigate the key projects and explore their significance.
+This is **Maclaine’s Rabbit Hole** — a public knowledge network of linked Markdown notes on automation, AI, clean energy, education, and the projects that connect them.
 
-## Project Overview
+## Where to go
 
-- **Pond AI Project**  
-  Wildlife detection and monitoring using custom-trained AI models like YOLOv8 and FastSAM.  
-  [Explore Pond AI](ai-systems/pond-ai/index.md)
+| Surface | URL |
+| --- | --- |
+| This wiki hub | [rabbitholedocs.netlify.app](https://rabbitholedocs.netlify.app/) |
+| Wiki app | [rabbitholedocs.netlify.app/rabbithole](https://rabbitholedocs.netlify.app/rabbithole/) |
+| Public site | [maclaine.ai](https://maclaine.ai/) |
+| Writing (Maclaine’s Map) | [maclaine.substack.com](https://maclaine.substack.com/) |
+| X | [x.com/macmaniac77](https://x.com/macmaniac77) |
 
-- **Thorium Reactor Factory**  
-  A vision for building scalable, automated thorium molten salt reactors to solve global energy problems.  
-  [Explore Thorium Reactors](thorium-reactor/index.md)
+## Live demos
 
-- **Museum Education Replacement**  
-  An AI-powered, project-based learning initiative aimed at transforming traditional museum education.  
-  [Explore Education Project](education/index.md)
+- **Fantastic Fission Future** — educational plant console → [fissionfuture.netlify.app](https://fissionfuture.netlify.app/)
+- **Fire Task Man** → [firetaskman.netlify.app](https://firetaskman.netlify.app/)
+- **Value equation** → [valueequation.netlify.app](https://valueequation.netlify.app/)
+- **Paper wallet** → [paperwallet.netlify.app](https://paperwallet.netlify.app/)
 
-- **Factory Automation**  
-  Enhancing American factory productivity with advanced control systems and automation technologies.  
-  [Explore Factory Automation](automation/project-case-studies/factory-automation.md)
+The older lab hub at [maclaine.netlify.app](https://maclaine.netlify.app/) still collects experimental links; prefer **maclaine.ai** and this wiki for the current public story.
 
-- **Interstellar Seed of Life**  
-  Developing infrastructure and systems to sustain life beyond Earth, creating a legacy for humanity.  
-  [Explore Interstellar Seed](interstellar-seed/index.md)
+## Project map (this wiki)
 
-- **YOLO Custom Models Optimization**  
-  Optimizing YOLO models for enhanced detection performance in various AI applications.  
-  [Explore YOLO Optimization](ai-systems/yolo-optimization.md)
+- **Pond AI** — wildlife detection with YOLO / FastSAM  
+  [Explore Pond AI](../ai-systems/pond-ai/index.md)
 
-Explore each section to dive into more details on how these projects interconnect.
+- **Thorium Reactor Factory** — molten-salt reactor vision + education  
+  [Explore Thorium](../thorium-reactor/index.md) · live demo [Fission Future](https://fissionfuture.netlify.app/)
+
+- **Education reform** — interactive / project-based learning notes  
+  [Explore Education](../education/index.md)
+
+- **Factory automation** — control panels, case studies, motion  
+  [Factory automation case study](../automation/project-case-studies/factory-automation.md) · [Automation hub](../automation/index.md)
+
+- **Interstellar Seed of Life** — long-horizon infrastructure notes  
+  [Explore Interstellar Seed](../interstellar-seed/index.md)
+
+- **AI systems** — YOLO optimization and local tooling  
+  [YOLO optimization](../ai-systems/yolo-optimization.md) · [AI systems hub](../ai-systems/index.md)
+
+Use the **⋯** menu on any wiki page to browse the full tree, or search from the home page.
+
+---
 
 # Maclaine Crabbe Morham
 
-Welcome to my digital space, where innovation, family, and a deep sense of purpose converge.
+Automation controls engineer working at the intersection of clean energy, factory systems, AI, and learning tools.
 
-My name is Maclaine Crabbe Morham, an automation controls engineer driven by a relentless pursuit to build systems that not only last, but meaningfully impact the world. My journey spans across the realms of clean energy, automation, AI, and personalized education, all tied together by a commitment to create, experiment, and inspire.
+## Mission (short)
 
----
+- **Walk with God** — foundation for the work  
+- **Energy abundance** — thorium / fission education and plant-console demos  
+- **American factory automation** — practical control and motion systems  
+- **Better learning tools** — interactive, project-based notes and demos  
+- **Long horizon** — infrastructure ideas worth planting now  
 
-## My Mission
+## Key threads in this wiki
 
-At the core of my existence lies a mission to balance the spiritual, intellectual, and practical layers of my life. These are the driving goals that guide me daily:
+### Pond AI
+Custom detection experiments (YOLO + FastSAM) for wildlife monitoring. See [Pond AI](../ai-systems/pond-ai/index.md).
 
-- **Walk with God**: Everything begins here. My journey through faith and personal growth is the foundation of all my actions and ambitions.
-  
-- **Interstellar Seed of Life**: I envision a future where humanity expands beyond Earth, powered by abundant clean energy and sustainable systems. I seek to create the technological seeds that allow humanity to thrive in space and beyond.
+### Fantastic Fission Future
+Public educational console for plant-style systems thinking: [fissionfuture.netlify.app](https://fissionfuture.netlify.app/). Notes live under [Thorium Reactor](../thorium-reactor/index.md).
 
-- **Thorium Reactor Factory**: Energy abundance is key to unlocking the next stage of human progress. Through the development of thorium reactors, I aim to build the foundation for clean, scalable energy that sustains civilization for generations.
+### Crabbe Automation
+Control panels and automation studies for real industrial work. Start at [Automation Engineering](../automation/index.md) or book [engineering hours](https://macmaniac77.gumroad.com/l/engineeringhours).
 
-- **Museum Education Replacement**: Traditional models of education must evolve. I aim to build interactive, AI-powered systems that teach the next generation through personalized learning, blending technology with timeless knowledge.
+## Contact
 
-- **Increase American Factory Automation**: I believe in a future where American manufacturing leads the world, not by competing for low-cost labor but by embracing the highest levels of automation and productivity. I am committed to creating solutions that make this future a reality.
-
----
-
-## Key Projects
-
-### **Pond AI Project**
-A custom AI model designed to detect animals in my pond, using a combination of YOLO models and FastSAM to improve detection quality. The project is an exploration of how AI can assist in automating processes in the natural world.
-
-### **Thorium Documentary**
-I'm deeply invested in educating others about the immense potential of thorium as a sustainable energy source. This project aims to share the story of how thorium reactors can change the global energy landscape.
-
-### **Crabbe Automation**
-Building control panels for industrial systems that optimize American manufacturing productivity. I am integrating AI and automation into every aspect of the design, bringing smarter and more efficient systems into factories.
-
----
-
-## Core Values
-
-- **Perseverance & Simplicity**: The path to progress is found through simple, focused steps. I believe in solving one problem at a time, creating lasting value for niche audiences, and growing from there.
-  
-- **Energy Abundance**: The key to human flourishing is the availability of sustainable, clean energy. My work with thorium reflects my commitment to this cause.
-
-- **Automation for a Better Future**: From AI-assisted education to American factory automation, my work seeks to optimize and elevate human potential through advanced technology.
-
-- **Legacy of Love & Wisdom**: Ultimately, everything I build is for my family and future generations. I strive to leave a legacy of love, innovation, and wisdom, reflected in every project I undertake.
-
----
-
-## Call to Action: Join the Movement
-
-I invite you to join me on this journey. Whether you're passionate about energy, automation, or rethinking education, there is a place for you here.
-
-- **For Builders**: If you're interested in contributing to clean energy, factory automation, or AI systems that last, reach out. Let's build together.
-
-- **For Visionaries**: If you see the future as I do — one of abundance, sustainability, and human flourishing — let's explore how we can collaborate to accelerate these outcomes.
-
-- **For Learners**: If you're curious about thorium, automation, or personalized education systems, I’m here to share what I’ve learned and help you grow along the way.
-
----
-
-## Contact Me
-
-Let’s collaborate and build the future we envision. Reach out to me [here](http://maclaine.netlify.app) or on [X/Twitter](https://x.com/macmaniac77).
+- Public site: [maclaine.ai](https://maclaine.ai/)  
+- Writing: [maclaine.substack.com](https://maclaine.substack.com/)  
+- X: [x.com/macmaniac77](https://x.com/macmaniac77)  
+- Email: [mac.maniac77@gmail.com](mailto:mac.maniac77@gmail.com)  

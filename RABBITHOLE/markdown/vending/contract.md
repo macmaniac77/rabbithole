@@ -6,5 +6,5 @@ This page contains the product information, pricing, and contract details for pu
 - Machine Type: Automated Snack/Drink Vending
 - Pricing: Customizable depending on the machine type and location
 
-[Contact for contract details.](mailto:contact@example.com)
+[Contact for contract details.](mailto:mac.maniac77@gmail.com)
 

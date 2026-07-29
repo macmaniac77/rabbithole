@@ -1,15 +1,18 @@
 # Project Case Studies
 
-This hub gathers automation case studies and links them back to the core system design and tooling.
-Use it to navigate from real-world implementations to the broader automation roadmap.
+Field notes from automation and motion work.
 
-## Case studies
+## In this folder
 
-- [Factory automation](./factory-automation.md)
+- [Factory Automation](./factory-automation.md)
 
-## Related rabbit hole docs
+## Related case studies (automation root)
 
-- [Automation overview](../index.md)
-- [Control panels](../control-panels.md)
-- [AI integration](../ai-integration.md)
-- [Quickstart](../../quickstart/index.md)
+These files live next to the automation hub (not under this folder):
+
+- [Fiber Pulling System](../fiber-pulling-system.md)
+- [XYZ Positioning](../xyz-positioning.md)
+
+## Hub
+
+- [Automation Engineering](../index.md)

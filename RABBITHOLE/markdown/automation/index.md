@@ -1,29 +1,30 @@
 # Automation Engineering
 
-This section explores the work in factory automation and control system integration, with a focus on increasing American factory productivity through AI-driven automation and advanced control panel design.
+Factory automation and control-system integration — practical control panels, motion, and AI-assisted operations aimed at American factory productivity.
 
----
-
-## Sections:
+## Sections
 
 - **Control Panels Design**  
-  Explore how custom control panels are designed to meet specific factory needs, with integrated AI and robotic systems for enhanced automation.  
-  [Explore Control Panels](automation/control-panels.md)
+  Custom panels with integrated automation.  
+  [Explore Control Panels](./control-panels.md)
 
 - **AI Integration in Automation**  
-  Learn how AI is transforming factory automation through real-time monitoring, anomaly detection, and predictive maintenance.  
-  [Explore AI Integration](automation/ai-integration.md)
+  Monitoring, anomaly detection, and assistive tooling.  
+  [Explore AI Integration](./ai-integration.md)
 
 - **Case Studies**  
-  Review detailed case studies showcasing successful factory automation projects and their impact on productivity.  
-  [Explore Case Studies](automation/project-case-studies/factory-automation.md)
+  - [Factory Automation](./project-case-studies/factory-automation.md)  
+  - [Fiber Pulling System](./fiber-pulling-system.md)  
+  - [XYZ Positioning](./xyz-positioning.md)  
+  - [Case studies index](./project-case-studies/index.md)
 
 - **Contracts**  
-  Find out more about study and implementation contracts for factory automation projects.  
-  [View Contracts](automation/contracts/study-contract.md)
+  - [Study Contract](./contracts/study-contract.md)  
+  - [Implementation](./contracts/implementation.md)
 
 - **Future Roadmap**  
-  Discover the long-term vision for advancing automation technology and AI integration in factories.  
-  [Explore Future Roadmap](automation/future-roadmap.md)
+  [Explore Future Roadmap](./future-roadmap.md)
 
-<a href="https://macmaniac77.gumroad.com/l/engineeringhours" class="link-button">Start an Engineering Study</a>
+## Work with me
+
+[Start an Engineering Study](https://macmaniac77.gumroad.com/l/engineeringhours) · [maclaine.ai](https://maclaine.ai/)
