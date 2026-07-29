@@ -37,3 +37,16 @@ This project is an evolving implementation of the Boathouse Value-Tree Engine, c
 *   More sophisticated ValuePoint spawning and UI interaction based on `ValuePoint.interface`.
 
 For a more detailed architecture overview, see `docs/ARCHITECTURE.md`.
+
+## Public production surface (Netlify)
+
+Live: https://rabbitholedocs.netlify.app/
+
+Production wiki is the **static** Netlify site:
+- `index.html` — home / theme cards
+- `rabbithole/index.html` (and `RABBITHOLE/index.html`) — wiki chrome
+- `RABBITHOLE/markdown/**` — content
+- `netlify/functions/**` — AI generate + GitHub commit helpers
+
+Other folders (Python app, templates, etc.) may exist for experiments; they are **not** the primary public deploy path unless Netlify is reconfigured.
+
