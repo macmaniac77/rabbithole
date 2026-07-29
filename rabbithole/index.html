@@ -145,8 +145,8 @@ textarea { min-height: 88px; resize: vertical; }
 .status.load { color: var(--accent); }
 
 #network {
-  height: min(320px, 48vw);
-  min-height: 220px;
+  height: min(420px, 62vw);
+  min-height: 300px;
   border-radius: 12px;
   background: #0c0e14;
   border: 1px solid var(--border);
@@ -155,6 +155,7 @@ textarea { min-height: 88px; resize: vertical; }
 
 /* 4. CONTENT */
 .article {
+  margin-bottom: 18px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -268,14 +269,19 @@ textarea { min-height: 88px; resize: vertical; }
     <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
 
     <!-- 1. Title -->
-    <header class="page-header">
+<header class="page-header">
       <p class="page-kicker" id="page-kicker">Rabbit Hole</p>
       <h1 class="page-title" id="page-title">Loading…</h1>
       <p class="page-meta" id="page-meta"></p>
     </header>
 
-    <!-- 2. AI editor -->
-    <section class="panel" id="ai-panel">
+    <!-- 2. Document body -->
+<article class="article">
+      <div id="content" class="prose"><p class="loading">Loading content…</p></div>
+    </article>
+
+    <!-- 3. AI editor -->
+<section class="panel" id="ai-panel">
       <button type="button" class="panel-head" id="ai-toggle" aria-expanded="false">
         <div>
           <h2>AI Content Tools</h2>
@@ -308,8 +314,8 @@ textarea { min-height: 88px; resize: vertical; }
       </div>
     </section>
 
-    <!-- 3. Graph -->
-    <section class="panel" id="graph-panel">
+    <!-- 4. Graph -->
+<section class="panel" id="graph-panel">
       <button type="button" class="panel-head" id="graph-toggle" aria-expanded="true">
         <div>
           <h2>Content network</h2>
@@ -322,11 +328,6 @@ textarea { min-height: 88px; resize: vertical; }
         <p class="graph-hint">Colors group by section · click a node to open that page</p>
       </div>
     </section>
-
-    <!-- 4. Document body -->
-    <article class="article">
-      <div id="content" class="prose"><p class="loading">Loading content…</p></div>
-    </article>
 
     <section class="related" id="related" hidden>
       <h3 id="related-title">More in this section</h3>
@@ -672,14 +673,45 @@ textarea { min-height: 88px; resize: vertical; }
     const nodes = new vis.DataSet(NODES.map(n => {
       const sec = sectionOf(n.path);
       if (!(sec in sections)) sections[sec] = colors[ci++ % colors.length];
+      const full = (n.label || fileLabel(n.path)).trim();
+      // Wrap long titles so they sit inside the bubble
+      const words = full.split(/\s+/);
+      const lines = [];
+      let line = '';
+      words.forEach(w => {
+        const trial = line ? line + ' ' + w : w;
+        if (trial.length > 16 && line) { lines.push(line); line = w; }
+        else line = trial;
+      });
+      if (line) lines.push(line);
+      const label = lines.slice(0, 3).join('\n') + (lines.length > 3 ? '…' : '');
+      const isHub = /\/index\.md$/i.test(n.path) || n.path.endsWith('quickstart/index.md');
       return {
         id: n.path,
-        label: (n.label || fileLabel(n.path)).slice(0, 28),
-        title: n.path,
-        color: { background: sections[sec], border: '#0f1117', highlight: { background: '#fff', border: sections[sec] } },
-        font: { color: '#0f1117', size: 12, face: 'system-ui' },
-        shape: 'dot',
-        size: n.path.endsWith('/index.md') ? 18 : 12,
+        label,
+        title: full + '\n' + n.path, // hover tooltip
+        color: {
+          background: sections[sec],
+          border: isHub ? '#ffffff' : '#0f1117',
+          highlight: { background: '#ffffff', border: sections[sec] },
+          hover: { background: '#e8eefc', border: sections[sec] },
+        },
+        font: {
+          color: '#0b0d12',
+          size: isHub ? 13 : 11,
+          face: 'system-ui, -apple-system, Segoe UI, sans-serif',
+          bold: isHub ? true : false,
+          multi: true,
+          align: 'center',
+          vadjust: 0,
+        },
+        shape: 'box',
+        margin: 10,
+        widthConstraint: { maximum: 130 },
+        heightConstraint: { minimum: 28 },
+        borderWidth: isHub ? 2.5 : 1.5,
+        borderWidthSelected: 3,
+        shadow: { enabled: true, color: 'rgba(0,0,0,0.35)', size: 6, x: 0, y: 2 },
       };
     }));
     const edgeSet = [];
@@ -702,7 +734,7 @@ textarea { min-height: 88px; resize: vertical; }
     });
     const data = { nodes, edges: new vis.DataSet(edgeSet) };
     network = new vis.Network(container, data, {
-      physics: { stabilization: true, barnesHut: { gravitationalConstant: -8000, springLength: 90 } },
+      physics: { stabilization: { iterations: 180 }, barnesHut: { gravitationalConstant: -12000, springLength: 140, avoidOverlap: 0.4 } },
       interaction: { hover: true, tooltipDelay: 80 },
       edges: { smooth: { type: 'continuous' } },
     });
