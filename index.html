@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maclaine's Rabbit Hole</title>
+    <meta name="theme-color" content="#0f1117">
     <style>
         :root {
             --bg: #0f1117;
@@ -30,7 +31,7 @@
             margin-bottom: 60px;
         }
         h1 {
-            font-size: 3.2rem;
+            font-size: clamp(2.2rem, 1.4rem + 3vw, 3.2rem);
             font-weight: 700;
             margin: 0 0 12px;
             background: linear-gradient(90deg, #7aa2f7, #a5b4fc);
@@ -173,19 +174,16 @@
             <p class="subtitle">Your living knowledge base — grown with AI</p>
         </header>
 
-        <!-- Search -->
         <div class="search-bar">
-            <input type="text" id="global-search" placeholder="Search your rabbit hole..." 
+            <input type="text" id="global-search" placeholder="Search your rabbit hole... (⌘K)"
                    onkeypress="if (event.key === 'Enter') searchWiki(this.value)">
         </div>
 
-        <!-- Quick Actions -->
         <div class="quick-actions">
-            <a href="/RABBITHOLE/index.html" class="btn">Enter the Wiki</a>
+            <a href="/rabbithole/" class="btn">Enter the Wiki</a>
             <button onclick="showNewThought()" class="btn btn-secondary">+ New Thought</button>
         </div>
 
-        <!-- New Thought Modal -->
         <div id="new-thought-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center;">
             <div class="new-thought" style="max-width: 600px; width: 90%;">
                 <h2 style="margin-top: 0;">Start a new thought</h2>
@@ -195,36 +193,35 @@
                     <button onclick="generateNewPage()" class="btn">Generate with AI →</button>
                 </div>
                 <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 12px;">
-                    This will create a new Markdown page and commit it to your repo.
+                    This will create a new Markdown page and commit it to your repo via Netlify functions.
                 </p>
             </div>
         </div>
 
-        <!-- Quick Access Cards -->
         <div class="section">
             <h2>Jump into a theme</h2>
             <div class="cards">
-                <a href="/RABBITHOLE/index.html#markdown/vending/index.md" class="card">
+                <a href="/rabbithole/#markdown/vending/index.md" class="card">
                     <h3>🚀 Vending Business</h3>
                     <p>Contracts, maintenance, future plans</p>
                 </a>
-                <a href="/RABBITHOLE/index.html#markdown/thorium-reactor/index.md" class="card">
+                <a href="/rabbithole/#markdown/thorium-reactor/index.md" class="card">
                     <h3>⚛️ Thorium Reactor</h3>
                     <p>Prototype design, investment, energy abundance</p>
                 </a>
-                <a href="/RABBITHOLE/index.html#markdown/ai-systems/index.md" class="card">
+                <a href="/rabbithole/#markdown/ai-systems/index.md" class="card">
                     <h3>🤖 AI Systems</h3>
                     <p>YOLO, FastSAM, Pond AI, local models</p>
                 </a>
-                <a href="/RABBITHOLE/index.html#markdown/automation/index.md" class="card">
+                <a href="/rabbithole/#markdown/automation/index.md" class="card">
                     <h3>🛠 Automation Engineering</h3>
                     <p>Control panels, case studies, future roadmap</p>
                 </a>
-                <a href="/RABBITHOLE/index.html#markdown/education/index.md" class="card">
+                <a href="/rabbithole/#markdown/education/index.md" class="card">
                     <h3>📚 Education Reform</h3>
                     <p>Interactive learning, AI task systems</p>
                 </a>
-                <a href="/RABBITHOLE/index.html#markdown/future-projects/index.md" class="card">
+                <a href="/rabbithole/#markdown/future-projects/index.md" class="card">
                     <h3>🌌 Future Projects</h3>
                     <p>Robotics, advanced nuclear, global energy</p>
                 </a>
@@ -232,36 +229,28 @@
         </div>
 
         <footer>
-            Built with intention • Powered by AI • Hosted on Netlify<br>
-            <small>Last updated: May 2026</small>
+            Built with intention · Powered by AI · Hosted on Netlify<br>
+            <small>Updated layout · July 2026</small>
         </footer>
     </div>
 
     <script>
         function searchWiki(query) {
             if (!query.trim()) return;
-            window.location.href = `/RABBITHOLE/index.html?search=${encodeURIComponent(query)}`;
+            window.location.href = '/rabbithole/?search=' + encodeURIComponent(query);
         }
-
         function showNewThought() {
             document.getElementById('new-thought-modal').style.display = 'flex';
             document.getElementById('thought-prompt').focus();
         }
-
         function hideNewThought() {
             document.getElementById('new-thought-modal').style.display = 'none';
         }
-
         async function generateNewPage() {
             const prompt = document.getElementById('thought-prompt').value.trim();
-            if (!prompt) {
-                alert('Please describe your thought');
-                return;
-            }
-
+            if (!prompt) { alert('Please describe your thought'); return; }
             const btns = document.querySelectorAll('#new-thought-modal button');
             btns.forEach(b => b.disabled = true);
-
             try {
                 const res = await fetch('/.netlify/functions/generateContent', {
                     method: 'POST',
@@ -271,28 +260,23 @@
                         title_prompt_text: 'A clear, compelling title for this idea'
                     })
                 });
-
                 if (!res.ok) throw new Error('Generation failed');
                 const data = await res.json();
-
                 const fileName = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.md';
-                const filePath = 'markdown/quickstart/' + fileName;
-
+                const filePath = 'quickstart/' + fileName;
                 const commitRes = await fetch('/.netlify/functions/commitFileToGitHub', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         filePath: filePath,
                         content: data.content,
-                        commitMessage: `Add new thought: ${data.title}`,
+                        commitMessage: 'Add new thought: ' + data.title,
                         isUpdate: false
                     })
                 });
-
                 if (!commitRes.ok) throw new Error('Commit failed');
-
-                alert('New page created! Redirecting to the wiki...');
-                window.location.href = `/RABBITHOLE/index.html#${filePath}`;
+                alert('New page created! Opening the wiki…');
+                window.location.href = '/rabbithole/#markdown/' + filePath;
             } catch (err) {
                 alert('Error: ' + err.message);
             } finally {
@@ -300,20 +284,12 @@
                 hideNewThought();
             }
         }
-
-        // Keyboard shortcut
         document.addEventListener('keydown', function(e) {
-            if (e.metaKey && e.key === 'k') {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
                 document.getElementById('global-search').focus();
             }
         });
-
-        // Auto-focus search on load
-        setTimeout(() => {
-            const search = document.getElementById('global-search');
-            if (search) search.placeholder = 'Search your rabbit hole... (⌘K)';
-        }, 800);
     </script>
 </body>
 </html>

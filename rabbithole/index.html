@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maclaine's Rabbit Hole · Wiki</title>
+<meta name="theme-color" content="#0f1117">
+<link rel="stylesheet" href="https://unpkg.com/vis-network/styles/vis-network.min.css">
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #161a24;
+  --card-2: #1c2230;
+  --accent: #7aa2f7;
+  --accent-2: #a5b4fc;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --border: #30363d;
+  --success: #3fb950;
+  --danger: #f85149;
+  --shadow: 0 18px 50px rgba(0,0,0,.45);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* floating chrome — no top menu bar */
+.fab-wrap {
+  position: fixed; top: 12px; right: 12px; z-index: 50;
+  display: flex; gap: 6px;
+  padding: 4px;
+  background: rgba(22,26,36,.92);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.fab {
+  width: 42px; height: 42px; border-radius: 999px;
+  border: none; background: transparent; color: var(--text);
+  cursor: pointer; display: grid; place-items: center;
+  font-size: 1.15rem;
+}
+.fab:hover, .fab[aria-expanded="true"] { background: var(--card-2); color: var(--accent); }
+
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 18px 80px;
+}
+@media (min-width: 640px) {
+  .page { padding: 40px 24px 96px; }
+}
+
+.crumbs {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--text-dim);
+  margin-bottom: 16px; padding-right: 100px;
+}
+.crumbs a, .crumbs button {
+  background: none; border: none; color: inherit; cursor: pointer;
+  font: inherit; padding: 2px 4px; border-radius: 6px;
+}
+.crumbs a:hover, .crumbs button:hover { color: var(--text); text-decoration: none; background: var(--card); }
+.crumbs .sep { opacity: .45; }
+
+/* 1. PAGE TITLE */
+.page-header { margin-bottom: 22px; padding-right: 70px; }
+.page-kicker {
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 600; margin: 0 0 8px;
+}
+.page-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.45rem);
+  font-weight: 700; line-height: 1.15; letter-spacing: -0.02em;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.page-meta { margin-top: 8px; font-size: .85rem; color: var(--text-dim); }
+
+/* cards */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  overflow: hidden;
+}
+.panel-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 16px 18px; background: transparent; border: none;
+  color: inherit; cursor: pointer; text-align: left; font: inherit;
+}
+.panel-head:hover { background: rgba(122,162,247,.04); }
+.panel-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.panel-head p { margin: 2px 0 0; font-size: .78rem; color: var(--text-dim); }
+.panel-body { padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.panel-body.closed { display: none; }
+
+label.field { display: block; margin: 12px 0; font-size: .78rem; color: var(--text-dim); font-weight: 600; }
+input[type=text], textarea {
+  width: 100%; margin-top: 6px; padding: 12px 14px;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font: inherit;
+  outline: none;
+}
+input[type=text]:focus, textarea:focus { border-color: var(--accent); }
+textarea { min-height: 88px; resize: vertical; }
+.row { display: grid; gap: 12px; }
+@media (min-width: 560px) { .row.two { grid-template-columns: 1fr 1fr; } }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: 999px; padding: 12px 22px;
+  font-weight: 600; font-size: .95rem; cursor: pointer;
+  background: var(--accent); color: #0f1117;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(122,162,247,.28); }
+.btn:disabled { opacity: .55; cursor: wait; transform: none; box-shadow: none; }
+.btn-ghost {
+  background: transparent; color: var(--text); border: 2px solid var(--border);
+}
+.btn-sm { padding: 8px 14px; font-size: .82rem; }
+.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--text-dim); margin: 10px 0; }
+.status {
+  margin-top: 12px; padding: 10px 12px; border-radius: 12px;
+  background: var(--card-2); color: var(--text-dim); font-size: .88rem;
+}
+.status.ok { background: rgba(63,185,80,.12); color: var(--success); }
+.status.err { background: rgba(248,81,73,.12); color: var(--danger); }
+.status.load { color: var(--accent); }
+
+#network {
+  height: min(320px, 48vw);
+  min-height: 220px;
+  border-radius: 12px;
+  background: #0c0e14;
+  border: 1px solid var(--border);
+}
+.graph-hint { font-size: .75rem; color: var(--text-dim); margin: 8px 0 0; }
+
+/* 4. CONTENT */
+.article {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 18px 28px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+@media (min-width: 640px) {
+  .article { padding: 32px 36px 40px; }
+}
+.article .loading { color: var(--text-dim); }
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: var(--text); line-height: 1.25; margin: 1.4em 0 .55em;
+}
+.prose h1 { font-size: 1.55rem; margin-top: 0; }
+.prose h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+.prose h3 { font-size: 1.08rem; }
+.prose p, .prose li { color: var(--text); }
+.prose ul, .prose ol { padding-left: 1.25em; }
+.prose li { margin: .35em 0; }
+.prose a { color: var(--accent); font-weight: 500; }
+.prose code {
+  background: var(--card-2); padding: .12em .4em; border-radius: 6px;
+  font-size: .9em; border: 1px solid var(--border);
+}
+.prose pre {
+  background: #0c0e14; border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; overflow: auto;
+}
+.prose pre code { background: none; border: none; padding: 0; }
+.prose blockquote {
+  margin: 1em 0; padding: .2em 0 .2em 1em;
+  border-left: 3px solid var(--accent); color: var(--text-dim);
+}
+.prose img { max-width: 100%; border-radius: 12px; }
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+.prose table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.prose th, .prose td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+.prose th { background: var(--card-2); }
+
+.related { margin-top: 28px; }
+.related h3 {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-dim); margin: 0 0 12px;
+}
+.related-grid { display: grid; gap: 10px; }
+@media (min-width: 520px) { .related-grid { grid-template-columns: 1fr 1fr; } }
+.related a {
+  display: block; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--text); text-decoration: none;
+}
+.related a:hover { border-color: var(--accent); transform: translateY(-1px); }
+.related a span { display: block; font-size: .78rem; color: var(--text-dim); margin-top: 2px; }
+
+.foot {
+  margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+  text-align: center; font-size: .78rem; color: var(--text-dim);
+}
+
+/* side drawer */
+.scrim {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 60;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 70;
+  width: min(360px, 92vw);
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transform: translateX(105%);
+  transition: transform .22s ease;
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.drawer-head h2 { margin: 0; font-size: 1rem; }
+.drawer-search { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.drawer-search input { margin: 0; }
+.drawer-tree {
+  flex: 1; overflow: auto; padding: 10px 8px 24px;
+  font-size: .9rem;
+}
+.drawer-tree ul { list-style: none; margin: 0; padding: 0 0 0 12px; }
+.drawer-tree > ul { padding-left: 0; }
+.drawer-tree a {
+  display: block; padding: 7px 10px; border-radius: 8px;
+  color: var(--text); text-decoration: none;
+}
+.drawer-tree a:hover { background: var(--card-2); text-decoration: none; }
+.drawer-tree a.active { background: rgba(122,162,247,.15); color: var(--accent); font-weight: 600; }
+.drawer-tree li > a:not([data-md]) { color: var(--text-dim); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; pointer-events: none; }
+
+@media (max-width: 480px) {
+  .fab { width: 40px; height: 40px; }
+  .page-header { padding-right: 56px; }
+}
+</style>
+</head>
+<body>
+  <div class="fab-wrap">
+    <button class="fab" id="btn-home" title="Home" aria-label="Home">⌂</button>
+    <button class="fab" id="btn-menu" title="Browse all ideas" aria-label="Open document browser" aria-expanded="false">⋯</button>
+  </div>
+
+  <main class="page">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
+
+    <!-- 1. Title -->
+    <header class="page-header">
+      <p class="page-kicker" id="page-kicker">Rabbit Hole</p>
+      <h1 class="page-title" id="page-title">Loading…</h1>
+      <p class="page-meta" id="page-meta"></p>
+    </header>
+
+    <!-- 2. AI editor -->
+    <section class="panel" id="ai-panel">
+      <button type="button" class="panel-head" id="ai-toggle" aria-expanded="false">
+        <div>
+          <h2>AI Content Tools</h2>
+          <p>Generate & commit Markdown · Netlify → GitHub</p>
+        </div>
+        <span id="ai-chevron">▾</span>
+      </button>
+      <div class="panel-body closed" id="ai-body">
+        <button type="button" class="btn btn-ghost btn-sm" id="ai-fill-current">Use current page</button>
+        <label class="field">Content Prompt
+          <textarea id="ai-prompt-content" placeholder="Describe the page to generate or how to revise it…"></textarea>
+        </label>
+        <label class="field">Title Prompt
+          <input type="text" id="ai-prompt-title" value="A clear, compelling title for this idea">
+        </label>
+        <div class="row two">
+          <label class="field">File Path (relative to RABBITHOLE/markdown/)
+            <input type="text" id="ai-file-path" placeholder="e.g. new-topic/my-page.md">
+          </label>
+          <label class="field">Commit Message
+            <input type="text" id="ai-commit-message" placeholder="Add page: …">
+          </label>
+        </div>
+        <label class="check">
+          <input type="checkbox" id="ai-is-update">
+          Update existing file (path must already exist)
+        </label>
+        <button type="button" class="btn" id="ai-generate-button">Generate & Commit Document</button>
+        <div class="status" id="ai-status">Status messages will appear here…</div>
+      </div>
+    </section>
+
+    <!-- 3. Graph -->
+    <section class="panel" id="graph-panel">
+      <button type="button" class="panel-head" id="graph-toggle" aria-expanded="true">
+        <div>
+          <h2>Content network</h2>
+          <p>How ideas link · drag nodes · click to open</p>
+        </div>
+        <span id="graph-chevron">▴</span>
+      </button>
+      <div class="panel-body" id="graph-body">
+        <div id="network"></div>
+        <p class="graph-hint">Colors group by section · click a node to open that page</p>
+      </div>
+    </section>
+
+    <!-- 4. Document body -->
+    <article class="article">
+      <div id="content" class="prose"><p class="loading">Loading content…</p></div>
+    </article>
+
+    <section class="related" id="related" hidden>
+      <h3 id="related-title">More in this section</h3>
+      <div class="related-grid" id="related-grid"></div>
+    </section>
+
+    <footer class="foot">Maclaine Crabbe Morham · rabbitholedocs.netlify.app</footer>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Browse ideas</h2>
+      <button class="fab" id="btn-close" aria-label="Close">✕</button>
+    </div>
+    <div class="drawer-search">
+      <input type="text" id="search" placeholder="Search pages…" autocomplete="off">
+    </div>
+    <div class="drawer-tree" id="tree">
+
+        
+        <ul>
+            <li><a href="#" data-md="markdown/quickstart/index.md">Quickstart</a></li>
+            <li>
+                <a href="#" data-md="markdown/vending/index.md">Vending Business</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/vending/contract.md">Contract</a></li>
+                    <li><a href="#" data-md="markdown/vending/maintenance.md">Maintenance</a></li>
+                    <li><a href="#" data-md="markdown/vending/future-plans.md">Future Plans</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/automation/index.md">Automation Engineering</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/automation/control-panels.md">Control Panels</a></li>
+                    <li><a href="#" data-md="markdown/automation/ai-integration.md">AI Integration</a></li>
+                    <li>
+                        <a href="#">Project Case Studies</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/factory-automation.md">Factory Automation</a></li>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/fiber-pulling-system.md">Fiber Pulling System</a></li>
+                            <li><a href="#" data-md="markdown/automation/project-case-studies/xyz-positioning.md">XYZ Positioning</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Contracts</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/automation/contracts/study-contract.md">Study Contract</a></li>
+                            <li><a href="#" data-md="markdown/automation/contracts/implementation.md">Implementation</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" data-md="markdown/automation/future-roadmap.md">Future Roadmap</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/thorium-reactor/index.md">Thorium Reactor Factory</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/thorium-reactor/prototype-design.md">Prototype Design</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/investment.md">Investment</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/energy-hyperabundance.md">Energy Hyperabundance</a></li>
+                    <li>
+                        <a href="#">Project Plans</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/thorium-reactor/project-plans/infrastructure.md">Infrastructure</a></li>
+                            <li><a href="#" data-md="markdown/thorium-reactor/project-plans/regulatory-compliance.md">Regulatory Compliance</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/vertical-farming.md">Vertical Farming</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/research.md">Research</a></li>
+                    <li><a href="#" data-md="markdown/thorium-reactor/thorium-documentary.md">Thorium Documentary</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/education/index.md">Education Reform</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/education/interactive-learning.md">Interactive Learning</a></li>
+                    <li><a href="#" data-md="markdown/education/generational-values.md">Generational Values</a></li>
+                    <li><a href="#" data-md="markdown/education/project-based-learning.md">Project-Based Learning</a></li>
+                    <li><a href="#" data-md="markdown/education/omnivision-projector.md">Omnivision Projector</a></li>
+                    <li><a href="#" data-md="markdown/education/ai-task-system.md">AI Task System</a></li>
+                    <li><a href="#" data-md="markdown/education/future-roadmap.md">Future Roadmap</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/interstellar-seed/index.md">Interstellar Seed of Life</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/interstellar-seed/space-habitats.md">Space Habitats</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/bioproduction.md">Bioproduction</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/space-infrastructure.md">Space Infrastructure</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/research.md">Research</a></li>
+                    <li><a href="#" data-md="markdown/interstellar-seed/energy-abundance.md">Energy Abundance</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/bitcoin-dao/index.md">Bitcoin DAO</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/bitcoin-dao/dao-governance.md">DAO Governance</a></li>
+                    <li><a href="#" data-md="markdown/bitcoin-dao/orders-of-magnitude.md">Orders of Magnitude</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/ai-systems/index.md">AI Systems</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/ai-systems/yolo-optimization.md">YOLO Optimization</a></li>
+                    <li><a href="#" data-md="markdown/ai-systems/fastsam-integration.md">FastSAM Integration</a></li>
+                    <li>
+                        <a href="#" data-md="markdown/ai-systems/pond-ai/index.md">Pond AI</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/pond-ai/wildlife-detection.md">Wildlife Detection</a></li>
+                            <li><a href="#" data-md="markdown/ai-systems/pond-ai/data-optimization.md">Data Optimization</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">AI Projects</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/ai-projects/camera-reset-automation.md">Camera Reset Automation</a></li>
+                            <li><a href="#" data-md="markdown/ai-systems/ai-projects/local-fine-tuning.md">Local Fine-Tuning</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Contracts</a>
+                        <ul>
+                            <li><a href="#" data-md="markdown/ai-systems/contracts/ai-study-contract.md">AI Study Contract</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/legacy-and-values/index.md">Legacy and Values</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/legacy-and-values/personal-mission.md">Personal Mission</a></li>
+                    <li><a href="#" data-md="markdown/legacy-and-values/generational-lessons.md">Generational Lessons</a></li>
+                    <li><a href="#" data-md="markdown/legacy-and-values/faith-and-leadership.md">Faith and Leadership</a></li>
+                </ul>
+            </li>
+            <li>
+                <a href="#" data-md="markdown/future-projects/index.md">Future Projects</a>
+                <ul>
+                    <li><a href="#" data-md="markdown/future-projects/robotics.md">Robotics</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/advanced-nuclear.md">Advanced Nuclear</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/global-energy-grid.md">Global Energy Grid</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/resource-optimization.md">Resource Optimization</a></li>
+                    <li><a href="#" data-md="markdown/future-projects/vr-education.md">VR Education</a></li>
+                </ul>
+            </li>
+        </ul>
+    
+    </div>
+  </aside>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<script>
+(function () {
+  const NODES = [{"path": "markdown/quickstart/index.md", "label": "Quickstart"}, {"path": "markdown/vending/index.md", "label": "Vending Business"}, {"path": "markdown/vending/contract.md", "label": "Contract"}, {"path": "markdown/vending/maintenance.md", "label": "Maintenance"}, {"path": "markdown/vending/future-plans.md", "label": "Future Plans"}, {"path": "markdown/automation/index.md", "label": "Automation Engineering"}, {"path": "markdown/automation/control-panels.md", "label": "Control Panels"}, {"path": "markdown/automation/ai-integration.md", "label": "AI Integration"}, {"path": "markdown/automation/project-case-studies/factory-automation.md", "label": "Factory Automation"}, {"path": "markdown/automation/project-case-studies/fiber-pulling-system.md", "label": "Fiber Pulling System"}, {"path": "markdown/automation/project-case-studies/xyz-positioning.md", "label": "XYZ Positioning"}, {"path": "markdown/automation/contracts/study-contract.md", "label": "Study Contract"}, {"path": "markdown/automation/contracts/implementation.md", "label": "Implementation"}, {"path": "markdown/automation/future-roadmap.md", "label": "Future Roadmap"}, {"path": "markdown/thorium-reactor/index.md", "label": "Thorium Reactor Factory"}, {"path": "markdown/thorium-reactor/prototype-design.md", "label": "Prototype Design"}, {"path": "markdown/thorium-reactor/investment.md", "label": "Investment"}, {"path": "markdown/thorium-reactor/energy-hyperabundance.md", "label": "Energy Hyperabundance"}, {"path": "markdown/thorium-reactor/project-plans/infrastructure.md", "label": "Infrastructure"}, {"path": "markdown/thorium-reactor/project-plans/regulatory-compliance.md", "label": "Regulatory Compliance"}, {"path": "markdown/thorium-reactor/vertical-farming.md", "label": "Vertical Farming"}, {"path": "markdown/thorium-reactor/research.md", "label": "Research"}, {"path": "markdown/thorium-reactor/thorium-documentary.md", "label": "Thorium Documentary"}, {"path": "markdown/education/index.md", "label": "Education Reform"}, {"path": "markdown/education/interactive-learning.md", "label": "Interactive Learning"}, {"path": "markdown/education/generational-values.md", "label": "Generational Values"}, {"path": "markdown/education/project-based-learning.md", "label": "Project-Based Learning"}, {"path": "markdown/education/omnivision-projector.md", "label": "Omnivision Projector"}, {"path": "markdown/education/ai-task-system.md", "label": "AI Task System"}, {"path": "markdown/education/future-roadmap.md", "label": "Future Roadmap"}, {"path": "markdown/interstellar-seed/index.md", "label": "Interstellar Seed of Life"}, {"path": "markdown/interstellar-seed/space-habitats.md", "label": "Space Habitats"}, {"path": "markdown/interstellar-seed/bioproduction.md", "label": "Bioproduction"}, {"path": "markdown/interstellar-seed/space-infrastructure.md", "label": "Space Infrastructure"}, {"path": "markdown/interstellar-seed/research.md", "label": "Research"}, {"path": "markdown/interstellar-seed/energy-abundance.md", "label": "Energy Abundance"}, {"path": "markdown/bitcoin-dao/index.md", "label": "Bitcoin DAO"}, {"path": "markdown/bitcoin-dao/dao-governance.md", "label": "DAO Governance"}, {"path": "markdown/bitcoin-dao/orders-of-magnitude.md", "label": "Orders of Magnitude"}, {"path": "markdown/ai-systems/index.md", "label": "AI Systems"}, {"path": "markdown/ai-systems/yolo-optimization.md", "label": "YOLO Optimization"}, {"path": "markdown/ai-systems/fastsam-integration.md", "label": "FastSAM Integration"}, {"path": "markdown/ai-systems/pond-ai/index.md", "label": "Pond AI"}, {"path": "markdown/ai-systems/pond-ai/wildlife-detection.md", "label": "Wildlife Detection"}, {"path": "markdown/ai-systems/pond-ai/data-optimization.md", "label": "Data Optimization"}, {"path": "markdown/ai-systems/ai-projects/camera-reset-automation.md", "label": "Camera Reset Automation"}, {"path": "markdown/ai-systems/ai-projects/local-fine-tuning.md", "label": "Local Fine-Tuning"}, {"path": "markdown/ai-systems/contracts/ai-study-contract.md", "label": "AI Study Contract"}, {"path": "markdown/legacy-and-values/index.md", "label": "Legacy and Values"}, {"path": "markdown/legacy-and-values/personal-mission.md", "label": "Personal Mission"}, {"path": "markdown/legacy-and-values/generational-lessons.md", "label": "Generational Lessons"}, {"path": "markdown/legacy-and-values/faith-and-leadership.md", "label": "Faith and Leadership"}, {"path": "markdown/future-projects/index.md", "label": "Future Projects"}, {"path": "markdown/future-projects/robotics.md", "label": "Robotics"}, {"path": "markdown/future-projects/advanced-nuclear.md", "label": "Advanced Nuclear"}, {"path": "markdown/future-projects/global-energy-grid.md", "label": "Global Energy Grid"}, {"path": "markdown/future-projects/resource-optimization.md", "label": "Resource Optimization"}, {"path": "markdown/future-projects/vr-education.md", "label": "VR Education"}];
+  const MD_BASES = [
+    '/RABBITHOLE/markdown/',
+    '/rabbithole/markdown/',
+    'markdown/',
+    '../RABBITHOLE/markdown/',
+  ];
+
+  let currentPath = 'markdown/quickstart/index.md';
+  let network = null;
+
+  const $ = (id) => document.getElementById(id);
+  const contentEl = $('content');
+  const titleEl = $('page-title');
+  const kickerEl = $('page-kicker');
+  const metaEl = $('page-meta');
+  const crumbsEl = $('crumbs');
+
+  function pathToId(p) {
+    return String(p || '').replace(/^\/+/, '').replace(/^markdown\//, '').replace(/\.md$/i, '');
+  }
+  function toMarkdownPath(p) {
+    let s = String(p || '').replace(/^\/+/, '');
+    if (s.startsWith('markdown/')) return s;
+    if (s.startsWith('RABBITHOLE/markdown/')) return s.replace('RABBITHOLE/', '');
+    if (!s.endsWith('.md')) s += (s.endsWith('/') ? 'index.md' : '.md');
+    return 'markdown/' + s.replace(/^markdown\//, '');
+  }
+  function sectionOf(p) {
+    const id = pathToId(p);
+    return id.split('/')[0] || 'root';
+  }
+  function sectionLabel(s) {
+    return s.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  function titleFromBody(md, fallback) {
+    const m = md.match(/^#\s+(.+)$/m);
+    return m ? m[1].trim() : fallback;
+  }
+  function fileLabel(p) {
+    const n = NODES.find(x => x.path === p);
+    if (n && n.label) return n.label;
+    const base = pathToId(p).split('/').pop();
+    if (base === 'index') return 'Overview';
+    return sectionLabel(base || 'Page');
+  }
+
+  function setHash(path) {
+    const h = '#' + path;
+    if (location.hash !== h) history.replaceState(null, '', h);
+  }
+
+  async function fetchMarkdown(path) {
+    const rel = path.replace(/^markdown\//, '');
+    const tries = MD_BASES.map(b => b.endsWith('/') ? b + rel : b + '/' + rel);
+    // also try exact relative
+    tries.unshift(path + '?cb=' + Date.now());
+    let lastErr;
+    for (const url of tries) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (res.ok) return await res.text();
+        lastErr = new Error(url + ' → ' + res.status);
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr || new Error('Failed to load ' + path);
+  }
+
+  function resolveMdLink(href, fromPath) {
+    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('#')) return null;
+    let clean = href.split('#')[0].trim();
+    if (!clean) return null;
+    if (clean.startsWith('/RABBITHOLE/markdown/')) return 'markdown/' + clean.slice('/RABBITHOLE/markdown/'.length);
+    if (clean.startsWith('/markdown/')) return clean.slice(1);
+    if (clean.startsWith('markdown/')) return clean;
+    // relative to current dir
+    const dir = fromPath.replace(/[^/]+$/, '');
+    // normalize ..
+    const joined = (dir + clean).replace(/\\/g, '/');
+    const parts = [];
+    for (const part of joined.split('/')) {
+      if (!part || part === '.') continue;
+      if (part === '..') parts.pop();
+      else parts.push(part);
+    }
+    let out = parts.join('/');
+    if (!out.endsWith('.md') && !out.includes('.')) {
+      // try as-is with .md
+      out = out + (out.endsWith('/') ? 'index.md' : '.md');
+    }
+    if (!out.startsWith('markdown/')) out = 'markdown/' + out.replace(/^markdown\//, '');
+    return out;
+  }
+
+  function wireContentLinks() {
+    contentEl.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const resolved = resolveMdLink(href, currentPath);
+      if (!resolved) return;
+      a.setAttribute('href', '#' + resolved);
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadMarkdown(resolved);
+      });
+    });
+  }
+
+  function renderCrumbs(path) {
+    const id = pathToId(path);
+    const parts = id.split('/');
+    let html = `<a href="/">Home</a><span class="sep">/</span><button type="button" data-go="markdown/quickstart/index.md">Rabbit Hole</button>`;
+    parts.forEach((part, i) => {
+      html += `<span class="sep">/</span><span>${part === 'index' ? 'Overview' : sectionLabel(part)}</span>`;
+    });
+    crumbsEl.innerHTML = html;
+    crumbsEl.querySelectorAll('[data-go]').forEach(btn => {
+      btn.addEventListener('click', () => loadMarkdown(btn.getAttribute('data-go')));
+    });
+  }
+
+  function renderRelated(path) {
+    const sec = sectionOf(path);
+    const others = NODES.filter(n => sectionOf(n.path) === sec && n.path !== path).slice(0, 6);
+    const box = $('related');
+    const grid = $('related-grid');
+    if (!others.length) { box.hidden = true; return; }
+    box.hidden = false;
+    $('related-title').textContent = 'More in ' + sectionLabel(sec);
+    grid.innerHTML = others.map(n =>
+      `<a href="#${n.path}" data-md="${n.path}"><strong>${n.label || fileLabel(n.path)}</strong><span>${n.path.replace(/^markdown\//,'')}</span></a>`
+    ).join('');
+    grid.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        loadMarkdown(a.getAttribute('data-md'));
+      });
+    });
+  }
+
+  function highlightTree(path) {
+    document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('data-md') === path);
+    });
+  }
+
+  async function loadMarkdown(file) {
+    const path = toMarkdownPath(file);
+    currentPath = path;
+    setHash(path);
+    contentEl.innerHTML = '<p class="loading">Loading content…</p>';
+    titleEl.textContent = 'Loading…';
+    try {
+      const text = await fetchMarkdown(path);
+      const label = fileLabel(path);
+      const title = titleFromBody(text, label);
+      titleEl.textContent = title;
+      kickerEl.textContent = sectionLabel(sectionOf(path));
+      metaEl.innerHTML = path.replace(/^markdown\//, '') +
+        ' · <a href="/RABBITHOLE/' + path + '" target="_blank" rel="noreferrer">raw .md</a>';
+      document.title = title + " · Maclaine's Rabbit Hole";
+      // hide first h1 in body (shown as page title)
+      let body = text.replace(/^#\s+.+$/m, '').trim();
+      contentEl.innerHTML = marked.parse(body || text);
+      wireContentLinks();
+      renderCrumbs(path);
+      renderRelated(path);
+      highlightTree(path);
+      if (network) {
+        try {
+          network.selectNodes([path]);
+          network.focus(path, { scale: 1.1, animation: true });
+        } catch (_) {}
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error(err);
+      titleEl.textContent = 'Could not load page';
+      contentEl.innerHTML = '<p>Error loading <code>' + path + '</code>. Check that the Markdown file exists under <code>/RABBITHOLE/markdown/</code>.</p>';
+    }
+  }
+
+  // ---- Graph ----
+  function initGraph() {
+    const container = $('network');
+    if (!window.vis) return;
+    const sections = {};
+    const colors = ['#7aa2f7','#a5b4fc','#7dcfff','#9ece6a','#e0af68','#bb9af7','#f7768e','#73daca','#ff9e64','#c0caf5'];
+    let ci = 0;
+    const nodes = new vis.DataSet(NODES.map(n => {
+      const sec = sectionOf(n.path);
+      if (!(sec in sections)) sections[sec] = colors[ci++ % colors.length];
+      return {
+        id: n.path,
+        label: (n.label || fileLabel(n.path)).slice(0, 28),
+        title: n.path,
+        color: { background: sections[sec], border: '#0f1117', highlight: { background: '#fff', border: sections[sec] } },
+        font: { color: '#0f1117', size: 12, face: 'system-ui' },
+        shape: 'dot',
+        size: n.path.endsWith('/index.md') ? 18 : 12,
+      };
+    }));
+    const edgeSet = [];
+    const seen = new Set();
+    NODES.forEach(n => {
+      const sec = sectionOf(n.path);
+      const idx = 'markdown/' + sec + '/index.md';
+      if (n.path !== idx && NODES.some(x => x.path === idx)) {
+        const k = idx + '->' + n.path;
+        if (!seen.has(k)) { seen.add(k); edgeSet.push({ from: idx, to: n.path, color: { color: '#30363d' } }); }
+      }
+    });
+    // quickstart hub
+    const home = 'markdown/quickstart/index.md';
+    Object.keys(sections).forEach(sec => {
+      const idx = 'markdown/' + sec + '/index.md';
+      if (idx !== home && NODES.some(x => x.path === idx)) {
+        edgeSet.push({ from: home, to: idx, color: { color: '#3d4450' }, dashes: true });
+      }
+    });
+    const data = { nodes, edges: new vis.DataSet(edgeSet) };
+    network = new vis.Network(container, data, {
+      physics: { stabilization: true, barnesHut: { gravitationalConstant: -8000, springLength: 90 } },
+      interaction: { hover: true, tooltipDelay: 80 },
+      edges: { smooth: { type: 'continuous' } },
+    });
+    network.on('click', (params) => {
+      if (params.nodes && params.nodes[0]) loadMarkdown(params.nodes[0]);
+    });
+  }
+
+  // ---- Drawer / search ----
+  function openDrawer(open) {
+    $('drawer').classList.toggle('open', open);
+    $('scrim').classList.toggle('open', open);
+    $('drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
+    $('btn-menu').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  $('btn-menu').onclick = () => openDrawer(!$('drawer').classList.contains('open'));
+  $('btn-close').onclick = () => openDrawer(false);
+  $('scrim').onclick = () => openDrawer(false);
+  $('btn-home').onclick = () => { location.href = '/'; };
+
+  document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openDrawer(false);
+      loadMarkdown(a.getAttribute('data-md'));
+    });
+  });
+
+  $('search').addEventListener('input', () => {
+    const q = $('search').value.trim().toLowerCase();
+    document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+      const t = (a.textContent + ' ' + a.getAttribute('data-md')).toLowerCase();
+      a.parentElement.style.display = !q || t.includes(q) ? '' : 'none';
+    });
+  });
+
+  // ---- Collapsibles ----
+  function bindToggle(btnId, bodyId, chevId, startOpen) {
+    const btn = $(btnId), body = $(bodyId), chev = $(chevId);
+    let open = !!startOpen;
+    const sync = () => {
+      body.classList.toggle('closed', !open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      chev.textContent = open ? '▴' : '▾';
+    };
+    btn.addEventListener('click', () => { open = !open; sync(); });
+    sync();
+  }
+  bindToggle('ai-toggle', 'ai-body', 'ai-chevron', false);
+  bindToggle('graph-toggle', 'graph-body', 'graph-chevron', true);
+
+  // ---- AI ----
+  function setAIStatus(text, kind) {
+    const el = $('ai-status');
+    el.textContent = text;
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+  $('ai-fill-current').onclick = () => {
+    const rel = currentPath.replace(/^markdown\//, '');
+    $('ai-file-path').value = rel;
+    $('ai-is-update').checked = true;
+    $('ai-commit-message').value = 'Update: ' + titleEl.textContent;
+    $('ai-prompt-content').value = 'Expand or improve the page "' + titleEl.textContent + '" (' + rel + '). Keep the same topic and tone.';
+    // open panel
+    $('ai-body').classList.remove('closed');
+    $('ai-toggle').setAttribute('aria-expanded', 'true');
+    $('ai-chevron').textContent = '▴';
+  };
+  $('ai-generate-button').onclick = async () => {
+    const contentPrompt = $('ai-prompt-content').value.trim();
+    const titlePrompt = $('ai-prompt-title').value.trim();
+    let filePath = $('ai-file-path').value.trim();
+    const commitMessage = $('ai-commit-message').value.trim();
+    const isUpdate = $('ai-is-update').checked;
+    if (!contentPrompt || !filePath || !commitMessage) {
+      setAIStatus('Content prompt, file path, and commit message are required.', 'err');
+      return;
+    }
+    $('ai-generate-button').disabled = true;
+    setAIStatus('1/2 Generating content via Netlify…', 'load');
+    try {
+      const genRes = await fetch('/.netlify/functions/generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt_text: contentPrompt, title_prompt_text: titlePrompt }),
+      });
+      if (!genRes.ok) {
+        const err = await genRes.json().catch(() => ({}));
+        throw new Error(err.error || err.details || ('Generate failed ' + genRes.status));
+      }
+      const generated = await genRes.json();
+      if (!filePath.toLowerCase().endsWith('.md')) {
+        const slug = String(generated.title || 'unnamed-page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        filePath = filePath.replace(/\/+$/, '') + '/' + (slug || 'unnamed-page') + '.md';
+      }
+      setAIStatus('2/2 Committing to GitHub…', 'load');
+      const commitRes = await fetch('/.netlify/functions/commitFileToGitHub', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filePath: filePath.replace(/^markdown\//, ''),
+          content: generated.content,
+          commitMessage,
+          isUpdate,
+        }),
+      });
+      if (!commitRes.ok) {
+        const err = await commitRes.json().catch(() => ({}));
+        throw new Error(err.error || err.details || ('Commit failed ' + commitRes.status));
+      }
+      const data = await commitRes.json();
+      setAIStatus('Success — ' + (data.message || 'committed') + '. Live after Netlify rebuilds.', 'ok');
+    } catch (e) {
+      setAIStatus(e.message || String(e), 'err');
+    } finally {
+      $('ai-generate-button').disabled = false;
+    }
+  };
+
+  // ---- Boot ----
+  function initialPath() {
+    const hash = (location.hash || '').replace(/^#/, '');
+    if (hash) return toMarkdownPath(hash);
+    const params = new URLSearchParams(location.search);
+    if (params.get('search')) {
+      // open drawer with search
+      openDrawer(true);
+      $('search').value = params.get('search');
+      $('search').dispatchEvent(new Event('input'));
+    }
+    return 'markdown/quickstart/index.md';
+  }
+
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '').replace(/^#/, '');
+    if (h) loadMarkdown(h);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openDrawer(true);
+      $('search').focus();
+    }
+    if (e.key === 'Escape') openDrawer(false);
+  });
+
+  initGraph();
+  loadMarkdown(initialPath());
+})();
+</script>
+</body>
+</html>

@@ -1,11 +1,25 @@
 [build]
   functions = "netlify/functions"
+  publish = "."
 
 [build.environment]
   NODE_VERSION = "22"
 
-[context.production.environment]
-  GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"
-  GITHUB_TOKEN = "YOUR_GITHUB_TOKEN"
-  GITHUB_REPO_OWNER = "YOUR_GITHUB_REPO_OWNER"
-  GITHUB_REPO_NAME = "YOUR_GITHUB_REPO_NAME"
+# Pretty wiki paths
+[[redirects]]
+  from = "/RABBITHOLE"
+  to = "/rabbithole/"
+  status = 301
+
+[[redirects]]
+  from = "/RABBITHOLE/"
+  to = "/rabbithole/"
+  status = 301
+
+[[redirects]]
+  from = "/RABBITHOLE/index.html"
+  to = "/rabbithole/"
+  status = 301
+
+# Secrets must be set in the Netlify UI (not committed):
+# GEMINI_API_KEY, GITHUB_TOKEN, GITHUB_REPO_OWNER, GITHUB_REPO_NAME

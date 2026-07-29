@@ -1,248 +1,353 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Maclaine Crabbe - Digital Space</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
-    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
-    <link href="https://unpkg.com/vis-network/styles/vis-network.min.css" rel="stylesheet" type="text/css" />
-    <style>
-        /* General page styling */
-        body {
-            margin: 0;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            background-color: #1b2b34; /* Dark industrial blue */
-            color: #d1e8e2; /* Light text color for contrast */
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Maclaine's Rabbit Hole · Wiki</title>
+<meta name="theme-color" content="#0f1117">
+<link rel="stylesheet" href="https://unpkg.com/vis-network/styles/vis-network.min.css">
+<style>
+:root {
+  --bg: #0f1117;
+  --card: #161a24;
+  --card-2: #1c2230;
+  --accent: #7aa2f7;
+  --accent-2: #a5b4fc;
+  --text: #c9d1d9;
+  --text-dim: #8b949e;
+  --border: #30363d;
+  --success: #3fb950;
+  --danger: #f85149;
+  --shadow: 0 18px 50px rgba(0,0,0,.45);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-        /* Typography */
-        h1, h2, h3 {
-            color: #79a7d3; /* Light blue for headers */
-        }
+/* floating chrome — no top menu bar */
+.fab-wrap {
+  position: fixed; top: 12px; right: 12px; z-index: 50;
+  display: flex; gap: 6px;
+  padding: 4px;
+  background: rgba(22,26,36,.92);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+.fab {
+  width: 42px; height: 42px; border-radius: 999px;
+  border: none; background: transparent; color: var(--text);
+  cursor: pointer; display: grid; place-items: center;
+  font-size: 1.15rem;
+}
+.fab:hover, .fab[aria-expanded="true"] { background: var(--card-2); color: var(--accent); }
 
-        h1 {
-            border-bottom: 2px solid #79a7d3;
-            padding-bottom: 10px;
-            text-align: center;
-        }
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 18px 80px;
+}
+@media (min-width: 640px) {
+  .page { padding: 40px 24px 96px; }
+}
 
-        p, li {
-            line-height: 1.6;
-        }
+.crumbs {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  font-size: .78rem; color: var(--text-dim);
+  margin-bottom: 16px; padding-right: 100px;
+}
+.crumbs a, .crumbs button {
+  background: none; border: none; color: inherit; cursor: pointer;
+  font: inherit; padding: 2px 4px; border-radius: 6px;
+}
+.crumbs a:hover, .crumbs button:hover { color: var(--text); text-decoration: none; background: var(--card); }
+.crumbs .sep { opacity: .45; }
 
-        /* Links */
-        a {
-            color: #66d9ef;
-            text-decoration: none;
-        }
+/* 1. PAGE TITLE */
+.page-header { margin-bottom: 22px; padding-right: 70px; }
+.page-kicker {
+  font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim); font-weight: 600; margin: 0 0 8px;
+}
+.page-title {
+  margin: 0;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.45rem);
+  font-weight: 700; line-height: 1.15; letter-spacing: -0.02em;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+}
+.page-meta { margin-top: 8px; font-size: .85rem; color: var(--text-dim); }
 
-        a:hover {
-            text-decoration: underline;
-        }
+/* cards */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  margin-bottom: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  overflow: hidden;
+}
+.panel-head {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 16px 18px; background: transparent; border: none;
+  color: inherit; cursor: pointer; text-align: left; font: inherit;
+}
+.panel-head:hover { background: rgba(122,162,247,.04); }
+.panel-head h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.panel-head p { margin: 2px 0 0; font-size: .78rem; color: var(--text-dim); }
+.panel-body { padding: 0 18px 18px; border-top: 1px solid var(--border); }
+.panel-body.closed { display: none; }
 
-        /* Code blocks */
-        pre {
-            background-color: #343d46; /* Slightly darker blue for code blocks */
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-            color: #a7adba;
-        }
+label.field { display: block; margin: 12px 0; font-size: .78rem; color: var(--text-dim); font-weight: 600; }
+input[type=text], textarea {
+  width: 100%; margin-top: 6px; padding: 12px 14px;
+  border-radius: 12px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--text); font: inherit;
+  outline: none;
+}
+input[type=text]:focus, textarea:focus { border-color: var(--accent); }
+textarea { min-height: 88px; resize: vertical; }
+.row { display: grid; gap: 12px; }
+@media (min-width: 560px) { .row.two { grid-template-columns: 1fr 1fr; } }
 
-        code {
-            background-color: #343d46;
-            padding: 2px 5px;
-            border-radius: 3px;
-        }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: 999px; padding: 12px 22px;
+  font-weight: 600; font-size: .95rem; cursor: pointer;
+  background: var(--accent); color: #0f1117;
+  transition: transform .15s, box-shadow .15s;
+}
+.btn:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(122,162,247,.28); }
+.btn:disabled { opacity: .55; cursor: wait; transform: none; box-shadow: none; }
+.btn-ghost {
+  background: transparent; color: var(--text); border: 2px solid var(--border);
+}
+.btn-sm { padding: 8px 14px; font-size: .82rem; }
+.check { display: flex; align-items: center; gap: 8px; font-size: .9rem; color: var(--text-dim); margin: 10px 0; }
+.status {
+  margin-top: 12px; padding: 10px 12px; border-radius: 12px;
+  background: var(--card-2); color: var(--text-dim); font-size: .88rem;
+}
+.status.ok { background: rgba(63,185,80,.12); color: var(--success); }
+.status.err { background: rgba(248,81,73,.12); color: var(--danger); }
+.status.load { color: var(--accent); }
 
-        /* Lists */
-        ul {
-            padding-left: 20px;
-        }
+#network {
+  height: min(320px, 48vw);
+  min-height: 220px;
+  border-radius: 12px;
+  background: #0c0e14;
+  border: 1px solid var(--border);
+}
+.graph-hint { font-size: .75rem; color: var(--text-dim); margin: 8px 0 0; }
 
-        /* Content area */
-        div#content {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #22303b; /* Lighter industrial blue for content container */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-        }
-        .link-button {
-            display: inline-block;
-            width: auto;
-            margin: 12px auto;
-            background-color: #4a90e2;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 14px;
-            letter-spacing: 0.3px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
+/* 4. CONTENT */
+.article {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 18px 28px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+}
+@media (min-width: 640px) {
+  .article { padding: 32px 36px 40px; }
+}
+.article .loading { color: var(--text-dim); }
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: var(--text); line-height: 1.25; margin: 1.4em 0 .55em;
+}
+.prose h1 { font-size: 1.55rem; margin-top: 0; }
+.prose h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: .3em; }
+.prose h3 { font-size: 1.08rem; }
+.prose p, .prose li { color: var(--text); }
+.prose ul, .prose ol { padding-left: 1.25em; }
+.prose li { margin: .35em 0; }
+.prose a { color: var(--accent); font-weight: 500; }
+.prose code {
+  background: var(--card-2); padding: .12em .4em; border-radius: 6px;
+  font-size: .9em; border: 1px solid var(--border);
+}
+.prose pre {
+  background: #0c0e14; border: 1px solid var(--border); border-radius: 12px;
+  padding: 14px; overflow: auto;
+}
+.prose pre code { background: none; border: none; padding: 0; }
+.prose blockquote {
+  margin: 1em 0; padding: .2em 0 .2em 1em;
+  border-left: 3px solid var(--accent); color: var(--text-dim);
+}
+.prose img { max-width: 100%; border-radius: 12px; }
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 1.5em 0; }
+.prose table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.prose th, .prose td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; }
+.prose th { background: var(--card-2); }
 
-        .link-button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
+.related { margin-top: 28px; }
+.related h3 {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-dim); margin: 0 0 12px;
+}
+.related-grid { display: grid; gap: 10px; }
+@media (min-width: 520px) { .related-grid { grid-template-columns: 1fr 1fr; } }
+.related a {
+  display: block; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--card);
+  color: var(--text); text-decoration: none;
+}
+.related a:hover { border-color: var(--accent); transform: translateY(-1px); }
+.related a span { display: block; font-size: .78rem; color: var(--text-dim); margin-top: 2px; }
 
-        .link-button:hover {
-            background-color: #3a7bd5;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+.foot {
+  margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border);
+  text-align: center; font-size: .78rem; color: var(--text-dim);
+}
 
-        .link-button:hover::after {
-            animation: ripple 1s ease-out;
-        }
+/* side drawer */
+.scrim {
+  position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 60;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 70;
+  width: min(360px, 92vw);
+  background: var(--card);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transform: translateX(105%);
+  transition: transform .22s ease;
+  display: flex; flex-direction: column;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 16px 12px; border-bottom: 1px solid var(--border);
+}
+.drawer-head h2 { margin: 0; font-size: 1rem; }
+.drawer-search { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.drawer-search input { margin: 0; }
+.drawer-tree {
+  flex: 1; overflow: auto; padding: 10px 8px 24px;
+  font-size: .9rem;
+}
+.drawer-tree ul { list-style: none; margin: 0; padding: 0 0 0 12px; }
+.drawer-tree > ul { padding-left: 0; }
+.drawer-tree a {
+  display: block; padding: 7px 10px; border-radius: 8px;
+  color: var(--text); text-decoration: none;
+}
+.drawer-tree a:hover { background: var(--card-2); text-decoration: none; }
+.drawer-tree a.active { background: rgba(122,162,247,.15); color: var(--accent); font-weight: 600; }
+.drawer-tree li > a:not([data-md]) { color: var(--text-dim); font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; pointer-events: none; }
 
-        .link-button:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 1;
-            }
-            20% {
-                transform: scale(25, 25);
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-                transform: scale(40, 40);
-            }
-        }
-        /* Navigation and buttons */
-        .nav-buttons {
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .nav-buttons a {
-            background-color: #79a7d3;
-            color: #1b2b34;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin: 0 10px;
-            text-decoration: none;
-        }
-
-        .nav-buttons a:hover {
-            background-color: #66d9ef;
-        }
-
-        /* Sidebar */
-        #sidebar {
-            width: 200px;
-            float: left;
-            margin-right: 20px;
-            background-color: #22303b;
-            padding: 20px;
-            border-radius: 8px;
-        }
-
-        #sidebar ul {
-            list-style-type: none;
-            padding-left: 20px;
-        }
-
-        #sidebar > ul {
-            padding-left: 0;
-        }
-
-        #sidebar li {
-            margin-bottom: 5px;
-        }
-
-        #sidebar li > a {
-            font-weight: bold;
-        }
-
-        #sidebar li li > a {
-            font-weight: normal;
-        }
-
-        /* Search box */
-        #search-box {
-            margin-bottom: 20px;
-        }
-
-        #search-box input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: none;
-            background-color: #343d46;
-            color: #d1e8e2;
-        }
-
-        #hyperlink-network {
-            width: 100%;
-            height: 400px; /* Adjust as needed */
-            border: 1px solid #79a7d3; /* Light blue border */
-            margin-bottom: 20px;
-            background-color: #22303b; /* Same as content area for consistency */
-        }
-    </style>
+@media (max-width: 480px) {
+  .fab { width: 40px; height: 40px; }
+  .page-header { padding-right: 56px; }
+}
+</style>
 </head>
 <body>
+  <div class="fab-wrap">
+    <button class="fab" id="btn-home" title="Home" aria-label="Home">⌂</button>
+    <button class="fab" id="btn-menu" title="Browse all ideas" aria-label="Open document browser" aria-expanded="false">⋯</button>
+  </div>
 
-    <div id="network-container" style="margin-bottom: 20px;">
-        <h2>Content Network</h2>
-        <div id="hyperlink-network"></div>
-    </div>
+  <main class="page">
+    <nav class="crumbs" id="crumbs" aria-label="Breadcrumb"></nav>
 
-    <div id="ai-controls" style="padding: 20px; margin-bottom: 20px; background-color: #2c3e50; border-radius: 8px;">
-        <h2>AI Content Tools</h2>
+    <!-- 1. Title -->
+    <header class="page-header">
+      <p class="page-kicker" id="page-kicker">Rabbit Hole</p>
+      <h1 class="page-title" id="page-title">Loading…</h1>
+      <p class="page-meta" id="page-meta"></p>
+    </header>
+
+    <!-- 2. AI editor -->
+    <section class="panel" id="ai-panel">
+      <button type="button" class="panel-head" id="ai-toggle" aria-expanded="false">
         <div>
-            <label for="ai-prompt-content">Content Prompt:</label><br>
-            <textarea id="ai-prompt-content" rows="3" style="width: 98%; margin-bottom: 10px;"></textarea><br>
-
-            <label for="ai-prompt-title">Title Prompt (e.g., 'A catchy title for a page about X'):</label><br>
-            <input type="text" id="ai-prompt-title" style="width: 98%; margin-bottom: 10px;"><br>
-
-            <label for="ai-file-path">File Path (e.g., 'new-topic/my-page.md' - relative to RABBITHOLE/markdown/):</label><br>
-            <input type="text" id="ai-file-path" style="width: 98%; margin-bottom: 10px;"><br>
-
-            <label for="ai-commit-message">Commit Message:</label><br>
-            <input type="text" id="ai-commit-message" style="width: 98%; margin-bottom: 10px;"><br>
-
-            <input type="checkbox" id="ai-is-update" style="margin-bottom: 10px;">
-            <label for="ai-is-update">Is this an update to an existing file? (If checked, file path must exist)</label><br>
-
-            <button id="ai-generate-button" class="link-button">Generate & Commit Document</button>
+          <h2>AI Content Tools</h2>
+          <p>Generate & commit Markdown · Netlify → GitHub</p>
         </div>
-        <div id="ai-status" style="margin-top: 15px; padding: 10px; background-color: #34495e; border-radius: 4px; min-height: 20px;">
-            Status messages will appear here...
+        <span id="ai-chevron">▾</span>
+      </button>
+      <div class="panel-body closed" id="ai-body">
+        <button type="button" class="btn btn-ghost btn-sm" id="ai-fill-current">Use current page</button>
+        <label class="field">Content Prompt
+          <textarea id="ai-prompt-content" placeholder="Describe the page to generate or how to revise it…"></textarea>
+        </label>
+        <label class="field">Title Prompt
+          <input type="text" id="ai-prompt-title" value="A clear, compelling title for this idea">
+        </label>
+        <div class="row two">
+          <label class="field">File Path (relative to RABBITHOLE/markdown/)
+            <input type="text" id="ai-file-path" placeholder="e.g. new-topic/my-page.md">
+          </label>
+          <label class="field">Commit Message
+            <input type="text" id="ai-commit-message" placeholder="Add page: …">
+          </label>
         </div>
+        <label class="check">
+          <input type="checkbox" id="ai-is-update">
+          Update existing file (path must already exist)
+        </label>
+        <button type="button" class="btn" id="ai-generate-button">Generate & Commit Document</button>
+        <div class="status" id="ai-status">Status messages will appear here…</div>
+      </div>
+    </section>
+
+    <!-- 3. Graph -->
+    <section class="panel" id="graph-panel">
+      <button type="button" class="panel-head" id="graph-toggle" aria-expanded="true">
+        <div>
+          <h2>Content network</h2>
+          <p>How ideas link · drag nodes · click to open</p>
+        </div>
+        <span id="graph-chevron">▴</span>
+      </button>
+      <div class="panel-body" id="graph-body">
+        <div id="network"></div>
+        <p class="graph-hint">Colors group by section · click a node to open that page</p>
+      </div>
+    </section>
+
+    <!-- 4. Document body -->
+    <article class="article">
+      <div id="content" class="prose"><p class="loading">Loading content…</p></div>
+    </article>
+
+    <section class="related" id="related" hidden>
+      <h3 id="related-title">More in this section</h3>
+      <div class="related-grid" id="related-grid"></div>
+    </section>
+
+    <footer class="foot">Maclaine Crabbe Morham · rabbitholedocs.netlify.app</footer>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <h2>Browse ideas</h2>
+      <button class="fab" id="btn-close" aria-label="Close">✕</button>
     </div>
+    <div class="drawer-search">
+      <input type="text" id="search" placeholder="Search pages…" autocomplete="off">
+    </div>
+    <div class="drawer-tree" id="tree">
 
-    <div id="sidebar">
-        <div id="search-box">
-            <input type="text" id="search" placeholder="Search content..." onkeyup="filterContent()">
-        </div>
+        
         <ul>
             <li><a href="#" data-md="markdown/quickstart/index.md">Quickstart</a></li>
             <li>
@@ -368,400 +473,386 @@
                 </ul>
             </li>
         </ul>
+    
     </div>
+  </aside>
 
-<div id="content">Loading content...</div>
-
-<div class="nav-buttons">
-    <a href="previous.html" id="previous-button">Previous</a>
-    <a href="next.html" id="next-button">Next</a>
-    <a href="index.html">Return to Quickstart</a>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/marked@4.0.16/marked.min.js"></script>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <script>
-    let currentlyLoadedMarkdownPath = '';
-    // Array of main project paths in the sidebar
-    const projects = [
-        'markdown/quickstart/index.md',
-        'markdown/vending/index.md',
-        'markdown/automation/index.md',
-        'markdown/thorium-reactor/index.md',
-        'markdown/education/index.md',
-        'markdown/interstellar-seed/index.md',
-        'markdown/bitcoin-dao/index.md',
-        'markdown/ai-systems/index.md',
-        'markdown/legacy-and-values/index.md',
-        'markdown/future-projects/index.md'
-    ];
-    // Function to navigate to the next or previous project
-    function navigateProject(direction) {
-        if (direction === 'next') {
-            currentIndex = (currentIndex + 1) % projects.length;
-        } else {
-            currentIndex = (currentIndex - 1 + projects.length) % projects.length;
-        }
+(function () {
+  const NODES = [{"path": "markdown/quickstart/index.md", "label": "Quickstart"}, {"path": "markdown/vending/index.md", "label": "Vending Business"}, {"path": "markdown/vending/contract.md", "label": "Contract"}, {"path": "markdown/vending/maintenance.md", "label": "Maintenance"}, {"path": "markdown/vending/future-plans.md", "label": "Future Plans"}, {"path": "markdown/automation/index.md", "label": "Automation Engineering"}, {"path": "markdown/automation/control-panels.md", "label": "Control Panels"}, {"path": "markdown/automation/ai-integration.md", "label": "AI Integration"}, {"path": "markdown/automation/project-case-studies/factory-automation.md", "label": "Factory Automation"}, {"path": "markdown/automation/project-case-studies/fiber-pulling-system.md", "label": "Fiber Pulling System"}, {"path": "markdown/automation/project-case-studies/xyz-positioning.md", "label": "XYZ Positioning"}, {"path": "markdown/automation/contracts/study-contract.md", "label": "Study Contract"}, {"path": "markdown/automation/contracts/implementation.md", "label": "Implementation"}, {"path": "markdown/automation/future-roadmap.md", "label": "Future Roadmap"}, {"path": "markdown/thorium-reactor/index.md", "label": "Thorium Reactor Factory"}, {"path": "markdown/thorium-reactor/prototype-design.md", "label": "Prototype Design"}, {"path": "markdown/thorium-reactor/investment.md", "label": "Investment"}, {"path": "markdown/thorium-reactor/energy-hyperabundance.md", "label": "Energy Hyperabundance"}, {"path": "markdown/thorium-reactor/project-plans/infrastructure.md", "label": "Infrastructure"}, {"path": "markdown/thorium-reactor/project-plans/regulatory-compliance.md", "label": "Regulatory Compliance"}, {"path": "markdown/thorium-reactor/vertical-farming.md", "label": "Vertical Farming"}, {"path": "markdown/thorium-reactor/research.md", "label": "Research"}, {"path": "markdown/thorium-reactor/thorium-documentary.md", "label": "Thorium Documentary"}, {"path": "markdown/education/index.md", "label": "Education Reform"}, {"path": "markdown/education/interactive-learning.md", "label": "Interactive Learning"}, {"path": "markdown/education/generational-values.md", "label": "Generational Values"}, {"path": "markdown/education/project-based-learning.md", "label": "Project-Based Learning"}, {"path": "markdown/education/omnivision-projector.md", "label": "Omnivision Projector"}, {"path": "markdown/education/ai-task-system.md", "label": "AI Task System"}, {"path": "markdown/education/future-roadmap.md", "label": "Future Roadmap"}, {"path": "markdown/interstellar-seed/index.md", "label": "Interstellar Seed of Life"}, {"path": "markdown/interstellar-seed/space-habitats.md", "label": "Space Habitats"}, {"path": "markdown/interstellar-seed/bioproduction.md", "label": "Bioproduction"}, {"path": "markdown/interstellar-seed/space-infrastructure.md", "label": "Space Infrastructure"}, {"path": "markdown/interstellar-seed/research.md", "label": "Research"}, {"path": "markdown/interstellar-seed/energy-abundance.md", "label": "Energy Abundance"}, {"path": "markdown/bitcoin-dao/index.md", "label": "Bitcoin DAO"}, {"path": "markdown/bitcoin-dao/dao-governance.md", "label": "DAO Governance"}, {"path": "markdown/bitcoin-dao/orders-of-magnitude.md", "label": "Orders of Magnitude"}, {"path": "markdown/ai-systems/index.md", "label": "AI Systems"}, {"path": "markdown/ai-systems/yolo-optimization.md", "label": "YOLO Optimization"}, {"path": "markdown/ai-systems/fastsam-integration.md", "label": "FastSAM Integration"}, {"path": "markdown/ai-systems/pond-ai/index.md", "label": "Pond AI"}, {"path": "markdown/ai-systems/pond-ai/wildlife-detection.md", "label": "Wildlife Detection"}, {"path": "markdown/ai-systems/pond-ai/data-optimization.md", "label": "Data Optimization"}, {"path": "markdown/ai-systems/ai-projects/camera-reset-automation.md", "label": "Camera Reset Automation"}, {"path": "markdown/ai-systems/ai-projects/local-fine-tuning.md", "label": "Local Fine-Tuning"}, {"path": "markdown/ai-systems/contracts/ai-study-contract.md", "label": "AI Study Contract"}, {"path": "markdown/legacy-and-values/index.md", "label": "Legacy and Values"}, {"path": "markdown/legacy-and-values/personal-mission.md", "label": "Personal Mission"}, {"path": "markdown/legacy-and-values/generational-lessons.md", "label": "Generational Lessons"}, {"path": "markdown/legacy-and-values/faith-and-leadership.md", "label": "Faith and Leadership"}, {"path": "markdown/future-projects/index.md", "label": "Future Projects"}, {"path": "markdown/future-projects/robotics.md", "label": "Robotics"}, {"path": "markdown/future-projects/advanced-nuclear.md", "label": "Advanced Nuclear"}, {"path": "markdown/future-projects/global-energy-grid.md", "label": "Global Energy Grid"}, {"path": "markdown/future-projects/resource-optimization.md", "label": "Resource Optimization"}, {"path": "markdown/future-projects/vr-education.md", "label": "VR Education"}];
+  const MD_BASES = [
+    '/RABBITHOLE/markdown/',
+    '/rabbithole/markdown/',
+    'markdown/',
+    '../RABBITHOLE/markdown/',
+  ];
 
-        loadMarkdown(projects[currentIndex]);
+  let currentPath = 'markdown/quickstart/index.md';
+  let network = null;
+
+  const $ = (id) => document.getElementById(id);
+  const contentEl = $('content');
+  const titleEl = $('page-title');
+  const kickerEl = $('page-kicker');
+  const metaEl = $('page-meta');
+  const crumbsEl = $('crumbs');
+
+  function pathToId(p) {
+    return String(p || '').replace(/^\/+/, '').replace(/^markdown\//, '').replace(/\.md$/i, '');
+  }
+  function toMarkdownPath(p) {
+    let s = String(p || '').replace(/^\/+/, '');
+    if (s.startsWith('markdown/')) return s;
+    if (s.startsWith('RABBITHOLE/markdown/')) return s.replace('RABBITHOLE/', '');
+    if (!s.endsWith('.md')) s += (s.endsWith('/') ? 'index.md' : '.md');
+    return 'markdown/' + s.replace(/^markdown\//, '');
+  }
+  function sectionOf(p) {
+    const id = pathToId(p);
+    return id.split('/')[0] || 'root';
+  }
+  function sectionLabel(s) {
+    return s.replace(/[-_]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+  function titleFromBody(md, fallback) {
+    const m = md.match(/^#\s+(.+)$/m);
+    return m ? m[1].trim() : fallback;
+  }
+  function fileLabel(p) {
+    const n = NODES.find(x => x.path === p);
+    if (n && n.label) return n.label;
+    const base = pathToId(p).split('/').pop();
+    if (base === 'index') return 'Overview';
+    return sectionLabel(base || 'Page');
+  }
+
+  function setHash(path) {
+    const h = '#' + path;
+    if (location.hash !== h) history.replaceState(null, '', h);
+  }
+
+  async function fetchMarkdown(path) {
+    const rel = path.replace(/^markdown\//, '');
+    const tries = MD_BASES.map(b => b.endsWith('/') ? b + rel : b + '/' + rel);
+    // also try exact relative
+    tries.unshift(path + '?cb=' + Date.now());
+    let lastErr;
+    for (const url of tries) {
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (res.ok) return await res.text();
+        lastErr = new Error(url + ' → ' + res.status);
+      } catch (e) { lastErr = e; }
     }
+    throw lastErr || new Error('Failed to load ' + path);
+  }
 
-    // Add event listeners to the navigation buttons
-    document.getElementById('next-button').addEventListener('click', function(e) {
+  function resolveMdLink(href, fromPath) {
+    if (!href || href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('#')) return null;
+    let clean = href.split('#')[0].trim();
+    if (!clean) return null;
+    if (clean.startsWith('/RABBITHOLE/markdown/')) return 'markdown/' + clean.slice('/RABBITHOLE/markdown/'.length);
+    if (clean.startsWith('/markdown/')) return clean.slice(1);
+    if (clean.startsWith('markdown/')) return clean;
+    // relative to current dir
+    const dir = fromPath.replace(/[^/]+$/, '');
+    // normalize ..
+    const joined = (dir + clean).replace(/\\/g, '/');
+    const parts = [];
+    for (const part of joined.split('/')) {
+      if (!part || part === '.') continue;
+      if (part === '..') parts.pop();
+      else parts.push(part);
+    }
+    let out = parts.join('/');
+    if (!out.endsWith('.md') && !out.includes('.')) {
+      // try as-is with .md
+      out = out + (out.endsWith('/') ? 'index.md' : '.md');
+    }
+    if (!out.startsWith('markdown/')) out = 'markdown/' + out.replace(/^markdown\//, '');
+    return out;
+  }
+
+  function wireContentLinks() {
+    contentEl.querySelectorAll('a[href]').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      const resolved = resolveMdLink(href, currentPath);
+      if (!resolved) return;
+      a.setAttribute('href', '#' + resolved);
+      a.addEventListener('click', (e) => {
         e.preventDefault();
-        navigateProject('next');
+        loadMarkdown(resolved);
+      });
     });
+  }
 
-    document.getElementById('previous-button').addEventListener('click', function(e) {
+  function renderCrumbs(path) {
+    const id = pathToId(path);
+    const parts = id.split('/');
+    let html = `<a href="/">Home</a><span class="sep">/</span><button type="button" data-go="markdown/quickstart/index.md">Rabbit Hole</button>`;
+    parts.forEach((part, i) => {
+      html += `<span class="sep">/</span><span>${part === 'index' ? 'Overview' : sectionLabel(part)}</span>`;
+    });
+    crumbsEl.innerHTML = html;
+    crumbsEl.querySelectorAll('[data-go]').forEach(btn => {
+      btn.addEventListener('click', () => loadMarkdown(btn.getAttribute('data-go')));
+    });
+  }
+
+  function renderRelated(path) {
+    const sec = sectionOf(path);
+    const others = NODES.filter(n => sectionOf(n.path) === sec && n.path !== path).slice(0, 6);
+    const box = $('related');
+    const grid = $('related-grid');
+    if (!others.length) { box.hidden = true; return; }
+    box.hidden = false;
+    $('related-title').textContent = 'More in ' + sectionLabel(sec);
+    grid.innerHTML = others.map(n =>
+      `<a href="#${n.path}" data-md="${n.path}"><strong>${n.label || fileLabel(n.path)}</strong><span>${n.path.replace(/^markdown\//,'')}</span></a>`
+    ).join('');
+    grid.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', (e) => {
         e.preventDefault();
-        navigateProject('previous');
+        loadMarkdown(a.getAttribute('data-md'));
+      });
     });
+  }
 
-    // Add event listener for arrow key navigation
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowRight') {
-            e.preventDefault();
-            navigateProject('next');
-        } else if (e.key === 'ArrowLeft') {
-            e.preventDefault();
-            navigateProject('previous');
-        }
+  function highlightTree(path) {
+    document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+      a.classList.toggle('active', a.getAttribute('data-md') === path);
     });
-    // Function to load markdown file dynamically
-    function loadMarkdown(file) {
-        console.log('Loading Markdown file:', file);
-        currentlyLoadedMarkdownPath = file; // Set current path
-        // Add a cache-busting parameter to the URL
-        const cacheBuster = `?cb=${new Date().getTime()}`;
-        fetch(file + cacheBuster)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error loading file: ${response.status}`);
-                }
-                return response.text();
-            })
-            .then(text => {
-                document.getElementById('content').innerHTML = marked.parse(text);
-                // Add event listeners to the newly loaded content
-                addContentEventListeners();
-            })
-            .catch(error => {
-                console.error("Error loading markdown file:", error);
-                document.getElementById('content').innerHTML = '<p>Error loading content. Please check the file path or server configuration.</p>';
-            });
+  }
+
+  async function loadMarkdown(file) {
+    const path = toMarkdownPath(file);
+    currentPath = path;
+    setHash(path);
+    contentEl.innerHTML = '<p class="loading">Loading content…</p>';
+    titleEl.textContent = 'Loading…';
+    try {
+      const text = await fetchMarkdown(path);
+      const label = fileLabel(path);
+      const title = titleFromBody(text, label);
+      titleEl.textContent = title;
+      kickerEl.textContent = sectionLabel(sectionOf(path));
+      metaEl.innerHTML = path.replace(/^markdown\//, '') +
+        ' · <a href="/RABBITHOLE/' + path + '" target="_blank" rel="noreferrer">raw .md</a>';
+      document.title = title + " · Maclaine's Rabbit Hole";
+      // hide first h1 in body (shown as page title)
+      let body = text.replace(/^#\s+.+$/m, '').trim();
+      contentEl.innerHTML = marked.parse(body || text);
+      wireContentLinks();
+      renderCrumbs(path);
+      renderRelated(path);
+      highlightTree(path);
+      if (network) {
+        try {
+          network.selectNodes([path]);
+          network.focus(path, { scale: 1.1, animation: true });
+        } catch (_) {}
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      console.error(err);
+      titleEl.textContent = 'Could not load page';
+      contentEl.innerHTML = '<p>Error loading <code>' + path + '</code>. Check that the Markdown file exists under <code>/RABBITHOLE/markdown/</code>.</p>';
     }
+  }
 
-    // Load initial content
-    let currentIndex = 0;
-    loadMarkdown(projects[currentIndex]);
-
-    // Add event listeners to all sidebar links
-    document.querySelectorAll('#sidebar a[data-md]').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            loadMarkdown(this.getAttribute('data-md'));
-        });
+  // ---- Graph ----
+  function initGraph() {
+    const container = $('network');
+    if (!window.vis) return;
+    const sections = {};
+    const colors = ['#7aa2f7','#a5b4fc','#7dcfff','#9ece6a','#e0af68','#bb9af7','#f7768e','#73daca','#ff9e64','#c0caf5'];
+    let ci = 0;
+    const nodes = new vis.DataSet(NODES.map(n => {
+      const sec = sectionOf(n.path);
+      if (!(sec in sections)) sections[sec] = colors[ci++ % colors.length];
+      return {
+        id: n.path,
+        label: (n.label || fileLabel(n.path)).slice(0, 28),
+        title: n.path,
+        color: { background: sections[sec], border: '#0f1117', highlight: { background: '#fff', border: sections[sec] } },
+        font: { color: '#0f1117', size: 12, face: 'system-ui' },
+        shape: 'dot',
+        size: n.path.endsWith('/index.md') ? 18 : 12,
+      };
+    }));
+    const edgeSet = [];
+    const seen = new Set();
+    NODES.forEach(n => {
+      const sec = sectionOf(n.path);
+      const idx = 'markdown/' + sec + '/index.md';
+      if (n.path !== idx && NODES.some(x => x.path === idx)) {
+        const k = idx + '->' + n.path;
+        if (!seen.has(k)) { seen.add(k); edgeSet.push({ from: idx, to: n.path, color: { color: '#30363d' } }); }
+      }
     });
+    // quickstart hub
+    const home = 'markdown/quickstart/index.md';
+    Object.keys(sections).forEach(sec => {
+      const idx = 'markdown/' + sec + '/index.md';
+      if (idx !== home && NODES.some(x => x.path === idx)) {
+        edgeSet.push({ from: home, to: idx, color: { color: '#3d4450' }, dashes: true });
+      }
+    });
+    const data = { nodes, edges: new vis.DataSet(edgeSet) };
+    network = new vis.Network(container, data, {
+      physics: { stabilization: true, barnesHut: { gravitationalConstant: -8000, springLength: 90 } },
+      interaction: { hover: true, tooltipDelay: 80 },
+      edges: { smooth: { type: 'continuous' } },
+    });
+    network.on('click', (params) => {
+      if (params.nodes && params.nodes[0]) loadMarkdown(params.nodes[0]);
+    });
+  }
 
-    // Function to add event listeners to content links
-    function addContentEventListeners() {
-        const contentArea = document.getElementById('content');
-        if (!contentArea) return;
+  // ---- Drawer / search ----
+  function openDrawer(open) {
+    $('drawer').classList.toggle('open', open);
+    $('scrim').classList.toggle('open', open);
+    $('drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
+    $('btn-menu').setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  $('btn-menu').onclick = () => openDrawer(!$('drawer').classList.contains('open'));
+  $('btn-close').onclick = () => openDrawer(false);
+  $('scrim').onclick = () => openDrawer(false);
+  $('btn-home').onclick = () => { location.href = '/'; };
 
-        contentArea.querySelectorAll('a[href]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
+  document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      openDrawer(false);
+      loadMarkdown(a.getAttribute('data-md'));
+    });
+  });
 
-                // 1. Check for external links or special protocols
-                if (href.startsWith('http://') || href.startsWith('https://') ||
-                    href.startsWith('mailto:') || href.startsWith('tel:')) {
-                    // For external links, let the browser handle it (or open in new tab)
-                    this.target = '_blank'; // Optional: open external links in new tab
-                    return;
-                }
+  $('search').addEventListener('input', () => {
+    const q = $('search').value.trim().toLowerCase();
+    document.querySelectorAll('.drawer-tree a[data-md]').forEach(a => {
+      const t = (a.textContent + ' ' + a.getAttribute('data-md')).toLowerCase();
+      a.parentElement.style.display = !q || t.includes(q) ? '' : 'none';
+    });
+  });
 
-                // 2. Check for on-page anchor links
-                if (href.startsWith('#')) {
-                    // For on-page anchors, let the browser handle default scrolling
-                    return;
-                }
+  // ---- Collapsibles ----
+  function bindToggle(btnId, bodyId, chevId, startOpen) {
+    const btn = $(btnId), body = $(bodyId), chev = $(chevId);
+    let open = !!startOpen;
+    const sync = () => {
+      body.classList.toggle('closed', !open);
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      chev.textContent = open ? '▴' : '▾';
+    };
+    btn.addEventListener('click', () => { open = !open; sync(); });
+    sync();
+  }
+  bindToggle('ai-toggle', 'ai-body', 'ai-chevron', false);
+  bindToggle('graph-toggle', 'graph-body', 'graph-chevron', true);
 
-                // 3. Prevent default for internal links that are not empty hrefs
-                if (href && href !== '#') {
-                   e.preventDefault();
-                } else if (href === '#') {
-                   // If href is just "#", also prevent default as it might be placeholder
-                   e.preventDefault();
-                   return; // Do nothing for empty hash links
-                } else {
-                   return; // No href or empty href, do nothing
-                }
-
-
-                // 4. Resolve path for internal markdown links
-                // Assume links ending with .md are markdown links.
-                // Other relative links might also be markdown links if they don't have extensions.
-                if (href.endsWith('.md') || !href.includes('.')) { // Consider links without extension as potential .md
-                    let resolvedPath = '';
-                    if (href.startsWith('/')) {
-                        // Absolute path from site root - assume it's already correct if it starts with 'markdown/'
-                        if (href.startsWith('/markdown/')) {
-                           resolvedPath = href.substring(1); // remove leading /
-                        } else {
-                            // Or, if it's like /foo/bar.md, it's hard to know the base.
-                            // For now, we'll assume such links are not used or correctly point within markdown source.
-                            // A safer bet for absolute-looking paths is to prepend 'markdown/' if not present
-                            resolvedPath = href.startsWith('markdown/') ? href : 'markdown' + href;
-                        }
-                    } else {
-                        // Relative path
-                        if (!currentlyLoadedMarkdownPath) {
-                            console.error("Error: currentlyLoadedMarkdownPath is not set. Cannot resolve relative link.");
-                            // Assuming setAIStatus is available for user feedback
-                            if(typeof setAIStatus === 'function') setAIStatus("Error: Cannot resolve relative link, current page path unknown.", true);
-                            return;
-                        }
-                        // Get directory of the current file
-                        const currentDir = currentlyLoadedMarkdownPath.substring(0, currentlyLoadedMarkdownPath.lastIndexOf('/') + 1);
-                        resolvedPath = currentDir + href;
-                    }
-
-                    // Normalize the path (e.g., resolve '..' and '.')
-                    const pathParts = resolvedPath.split('/');
-                    const normalizedParts = [];
-                    for (const part of pathParts) {
-                        if (part === '..') {
-                            if (normalizedParts.length > 0 && normalizedParts[normalizedParts.length -1] !== 'markdown') { // Don't go above 'markdown'
-                                normalizedParts.pop();
-                            }
-                        } else if (part !== '.' && part !== '') {
-                            normalizedParts.push(part);
-                        }
-                    }
-                    resolvedPath = normalizedParts.join('/');
-
-                    console.log(`Internal link clicked. Original href: "${href}", Resolved path: "${resolvedPath}" from "${currentlyLoadedMarkdownPath}"`);
-                    loadMarkdown(resolvedPath);
-                } else {
-                    // For other relative links (e.g., to images, other non-md files), let browser handle
-                    // or if they were meant to be markdown and had an extension, they won't be caught here.
-                    console.log(`Relative link with unhandled extension: ${href}. Allowing default behavior for now, but this might be an error.`);
-                    // To be safe, if we are here, it means it's not an external, not an anchor,
-                    // not explicitly .md. We should probably prevent default and log an error or warning.
-                    e.preventDefault();
-                    console.warn(`Unhandled relative link type: ${href}. Navigation prevented.`);
-                    if(typeof setAIStatus === 'function') setAIStatus(`Warning: Link to '${href}' was not followed as its type is unhandled in SPA mode.`, true);
-                }
-            });
-        });
+  // ---- AI ----
+  function setAIStatus(text, kind) {
+    const el = $('ai-status');
+    el.textContent = text;
+    el.className = 'status' + (kind ? ' ' + kind : '');
+  }
+  $('ai-fill-current').onclick = () => {
+    const rel = currentPath.replace(/^markdown\//, '');
+    $('ai-file-path').value = rel;
+    $('ai-is-update').checked = true;
+    $('ai-commit-message').value = 'Update: ' + titleEl.textContent;
+    $('ai-prompt-content').value = 'Expand or improve the page "' + titleEl.textContent + '" (' + rel + '). Keep the same topic and tone.';
+    // open panel
+    $('ai-body').classList.remove('closed');
+    $('ai-toggle').setAttribute('aria-expanded', 'true');
+    $('ai-chevron').textContent = '▴';
+  };
+  $('ai-generate-button').onclick = async () => {
+    const contentPrompt = $('ai-prompt-content').value.trim();
+    const titlePrompt = $('ai-prompt-title').value.trim();
+    let filePath = $('ai-file-path').value.trim();
+    const commitMessage = $('ai-commit-message').value.trim();
+    const isUpdate = $('ai-is-update').checked;
+    if (!contentPrompt || !filePath || !commitMessage) {
+      setAIStatus('Content prompt, file path, and commit message are required.', 'err');
+      return;
     }
-
-    // Search and filter function
-    function filterContent() {
-        let input = document.getElementById('search').value.toLowerCase();
-        let links = document.querySelectorAll('#sidebar ul li');
-
-        links.forEach(link => {
-            let text = link.innerText.toLowerCase();
-            if (text.includes(input)) {
-                link.style.display = 'block';
-            } else {
-                link.style.display = 'none';
-            }
-        });
+    $('ai-generate-button').disabled = true;
+    setAIStatus('1/2 Generating content via Netlify…', 'load');
+    try {
+      const genRes = await fetch('/.netlify/functions/generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt_text: contentPrompt, title_prompt_text: titlePrompt }),
+      });
+      if (!genRes.ok) {
+        const err = await genRes.json().catch(() => ({}));
+        throw new Error(err.error || err.details || ('Generate failed ' + genRes.status));
+      }
+      const generated = await genRes.json();
+      if (!filePath.toLowerCase().endsWith('.md')) {
+        const slug = String(generated.title || 'unnamed-page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        filePath = filePath.replace(/\/+$/, '') + '/' + (slug || 'unnamed-page') + '.md';
+      }
+      setAIStatus('2/2 Committing to GitHub…', 'load');
+      const commitRes = await fetch('/.netlify/functions/commitFileToGitHub', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filePath: filePath.replace(/^markdown\//, ''),
+          content: generated.content,
+          commitMessage,
+          isUpdate,
+        }),
+      });
+      if (!commitRes.ok) {
+        const err = await commitRes.json().catch(() => ({}));
+        throw new Error(err.error || err.details || ('Commit failed ' + commitRes.status));
+      }
+      const data = await commitRes.json();
+      setAIStatus('Success — ' + (data.message || 'committed') + '. Live after Netlify rebuilds.', 'ok');
+    } catch (e) {
+      setAIStatus(e.message || String(e), 'err');
+    } finally {
+      $('ai-generate-button').disabled = false;
     }
+  };
 
-   // --- Start of Hyperlink Network functions ---
+  // ---- Boot ----
+  function initialPath() {
+    const hash = (location.hash || '').replace(/^#/, '');
+    if (hash) return toMarkdownPath(hash);
+    const params = new URLSearchParams(location.search);
+    if (params.get('search')) {
+      // open drawer with search
+      openDrawer(true);
+      $('search').value = params.get('search');
+      $('search').dispatchEvent(new Event('input'));
+    }
+    return 'markdown/quickstart/index.md';
+  }
 
-   // Sample folder structure data (replace with dynamic data later)
-   const sampleFolderStructure = [
-       { type: 'folder', name: 'quickstart', children: [
-           { type: 'file', name: 'index.md', path: 'markdown/quickstart/index.md' }
-       ]},
-       { type: 'folder', name: 'vending', children: [
-           { type: 'file', name: 'index.md', path: 'markdown/vending/index.md' },
-           { type: 'file', name: 'contract.md', path: 'markdown/vending/contract.md' }
-       ]},
-       { type: 'folder', name: 'automation', children: [
-           { type: 'file', name: 'index.md', path: 'markdown/automation/index.md' },
-           { type: 'folder', name: 'project-case-studies', children: [
-               { type: 'file', name: 'factory-automation.md', path: 'markdown/automation/project-case-studies/factory-automation.md'}
-           ]}
-       ]},
-       { type: 'file', name: 'agents.md', path: 'markdown/agents.md'}
-   ];
+  window.addEventListener('hashchange', () => {
+    const h = (location.hash || '').replace(/^#/, '');
+    if (h) loadMarkdown(h);
+  });
 
-   function processStructure(items, parentId, nodes, edges, currentPath = 'markdown') {
-       let idCounter = parentId ? parentId * 100 : 0;
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openDrawer(true);
+      $('search').focus();
+    }
+    if (e.key === 'Escape') openDrawer(false);
+  });
 
-       items.forEach(item => {
-           const nodeId = ++idCounter;
-           let label = item.name;
-           if (item.type === 'file' && label.endsWith('.md')) {
-               label = label.substring(0, label.length - 3);
-           }
-
-           nodes.push({
-               id: nodeId,
-               label: label,
-               group: item.type,
-               filePath: item.type === 'file' ? item.path : null,
-               title: item.path || item.name
-           });
-
-           if (parentId) {
-               edges.push({ from: parentId, to: nodeId });
-           }
-
-           if (item.type === 'folder' && item.children) {
-               const folderPathForChildren = item.path ? item.path : (currentPath + '/' + item.name);
-               idCounter = processStructure(item.children, nodeId, nodes, edges, folderPathForChildren, idCounter);
-           }
-       });
-       return idCounter;
-   }
-
-   function initializeHyperlinkNetwork(folderStructure) {
-       const nodes = [];
-       const edges = [];
-       const rootNodeId = 0;
-       nodes.push({id: rootNodeId, label: 'Rabbit Hole Root', group: 'root', title: 'RABBITHOLE/markdown'});
-
-       processStructure(folderStructure, rootNodeId, nodes, edges, 'markdown');
-
-       const container = document.getElementById('hyperlink-network');
-       const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
-       const options = {
-           layout: {
-               hierarchical: { enabled: false },
-               randomSeed: 2
-           },
-           interaction: { hover: true, tooltipDelay: 200 },
-           physics: {
-               forceAtlas2Based: {
-                   gravitationalConstant: -30,
-                   centralGravity: 0.005,
-                   springLength: 100,
-                   springConstant: 0.18
-               },
-               maxVelocity: 146,
-               solver: 'forceAtlas2Based',
-               timestep: 0.35,
-               stabilization: {iterations: 150}
-           },
-           nodes: {
-               shape: 'box', margin: 10, font: { color: '#d1e8e2' },
-               color: {
-                  border: '#79a7d3', background: '#2c3e50',
-                  highlight: { border: '#66d9ef', background: '#34495e' },
-                  hover: { border: '#66d9ef', background: '#34495e' }
-               },
-           },
-           edges: {
-               width: 0.15, color: { color:'#848484', highlight:'#add8e6', hover: '#add8e6' },
-               arrows: { to: { enabled: true, scaleFactor:0.5 } }
-           }
-       };
-
-       const network = new vis.Network(container, data, options);
-
-       network.on('click', function(params) {
-           if (params.nodes.length > 0) {
-               const nodeId = params.nodes[0];
-               const node = data.nodes.get(nodeId);
-               if (node && node.filePath) {
-                   console.log('Clicked file node:', node.filePath);
-                   loadMarkdown(node.filePath);
-               } else if (node) {
-                   console.log('Clicked folder or root node:', node.label);
-               }
-           }
-       });
-   }
-   // --- End of Hyperlink Network functions ---
-
-   // --- Start of new AI interaction functions ---
-   function setAIStatus(message, isError = false) {
-       const statusDiv = document.getElementById('ai-status');
-       statusDiv.textContent = message;
-       statusDiv.style.color = isError ? 'red' : '#d1e8e2';
-   }
-
-   async function handleAIDocumentGeneration() {
-       setAIStatus('Starting AI document generation...');
-       const contentPrompt = document.getElementById('ai-prompt-content').value;
-       const titlePrompt = document.getElementById('ai-prompt-title').value;
-       const filePath = document.getElementById('ai-file-path').value;
-       const commitMessage = document.getElementById('ai-commit-message').value;
-       const isUpdate = document.getElementById('ai-is-update').checked;
-
-       if (!contentPrompt || !titlePrompt || !filePath || !commitMessage) {
-           setAIStatus('Error: All fields (Content Prompt, Title Prompt, File Path, Commit Message) are required.', true);
-           return;
-       }
-
-       try {
-           setAIStatus('1/2: Generating content with Gemini...');
-           const generateResponse = await fetch('/.netlify/functions/generateContent', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({
-                   prompt_text: contentPrompt,
-                   title_prompt_text: titlePrompt
-               }),
-           });
-
-           if (!generateResponse.ok) {
-               const errorData = await generateResponse.json();
-               throw new Error(`Failed to generate content: ${generateResponse.status} ${generateResponse.statusText} - ${errorData.error || errorData.details}`);
-           }
-           const generatedData = await generateResponse.json();
-
-           let finalFilePath = filePath;
-           if (!finalFilePath.toLowerCase().endsWith('.md')) {
-                const sanitizedTitle = generatedData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-                const fileName = sanitizedTitle ? `${sanitizedTitle}.md` : 'unnamed-page.md';
-                if (finalFilePath.endsWith('/')) {
-                    finalFilePath += fileName;
-                } else if (finalFilePath === '' || finalFilePath.split('/').pop().indexOf('.') === -1) {
-                    finalFilePath = (finalFilePath === '' ? '' : finalFilePath + '/') + fileName;
-                }
-           }
-
-           setAIStatus('2/2: Committing document to GitHub...');
-           const commitResponse = await fetch('/.netlify/functions/commitFileToGitHub', {
-               method: 'POST',
-               headers: { 'Content-Type': 'application/json' },
-               body: JSON.stringify({
-                   filePath: finalFilePath,
-                   content: generatedData.content,
-                   commitMessage: commitMessage,
-                   isUpdate: isUpdate,
-               }),
-           });
-
-           if (!commitResponse.ok) {
-               const errorData = await commitResponse.json();
-               throw new Error(`Failed to commit file: ${commitResponse.status} ${commitResponse.statusText} - ${errorData.error || errorData.details}`);
-           }
-           const commitData = await commitResponse.json();
-           setAIStatus(`Success! ${commitData.message}. The page should be live after Netlify rebuilds.`);
-       } catch (error) {
-           console.error('AI Document Generation Error:', error);
-           setAIStatus(`Error: ${error.message}`, true);
-       }
-   }
-   document.getElementById('ai-generate-button').addEventListener('click', handleAIDocumentGeneration);
-   // --- End of new AI interaction functions ---
-
-   try {
-       initializeHyperlinkNetwork(sampleFolderStructure);
-   } catch (e) {
-       console.error("Error initializing hyperlink network:", e);
-       const networkContainer = document.getElementById('hyperlink-network');
-       if (networkContainer) {
-           networkContainer.innerHTML = "<p style='color:red;'>Error initializing content network graph. See console for details.</p>";
-       }
-   }
+  initGraph();
+  loadMarkdown(initialPath());
+})();
 </script>
-
 </body>
 </html>
