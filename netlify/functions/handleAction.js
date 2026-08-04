@@ -56,6 +56,22 @@ function get_prompts_for_deeper(content, doc_path, history_summary, user_comment
     `;
 }
 
+async function summarizeHistory(paths = []) {
+    const summaries = [];
+    for (const historyPath of Array.isArray(paths) ? paths : []) {
+        try {
+            const fullPath = sanitizeFilePath(historyPath);
+            const { content } = await getFileContent(fullPath);
+            const firstLine = content.split('\n').find((line) => line.trim());
+            const excerpt = firstLine ? firstLine.replace(/^#\s*/, '').trim() : historyPath;
+            summaries.push(excerpt.length > 120 ? `${excerpt.slice(0, 117)}...` : excerpt);
+        } catch (err) {
+            console.error(`Failed to summarize history for path ${historyPath}:`, err.message);
+        }
+    }
+    return summaries.join(' -> ');
+}
+
 exports.handler = async function (event, context) {
     if (event.httpMethod !== 'POST') {
         return {
@@ -79,9 +95,10 @@ exports.handler = async function (event, context) {
         const finalFilePath = sanitizeFilePath(doc_path);
 
         const { content: originalContent, sha: fileSha } = await getFileContent(finalFilePath);
+        const historySummary = await summarizeHistory(document_path_history);
 
         if (action_type === 'bigger') {
-            const prompt = get_prompt_for_bigger(originalContent, doc_path, JSON.stringify(document_path_history), user_comment);
+            const prompt = get_prompt_for_bigger(originalContent, doc_path, historySummary, user_comment);
             const newContent = await generateContent(prompt);
 
             await commitFile(finalFilePath, newContent, `Expand document: ${finalFilePath}`, fileSha);
@@ -92,7 +109,7 @@ exports.handler = async function (event, context) {
                 headers: { 'Content-Type': 'application/json' },
             };
         } else if (action_type === 'deeper') {
-            const prompt = get_prompts_for_deeper(originalContent, doc_path, JSON.stringify(document_path_history), user_comment);
+            const prompt = get_prompts_for_deeper(originalContent, doc_path, historySummary, user_comment);
             const llm_data = await generateJsonContent(prompt);
 
             const { new_doc_title, new_doc_content, link_phrase_in_original_doc } = llm_data;
